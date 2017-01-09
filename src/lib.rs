@@ -57,9 +57,6 @@ pub const INPUT_EMPTY: u32 = 0;
 /// the output space has been exhausted.
 pub const OUTPUT_FULL: u32 = 0xFFFFFFFF;
 
-/// The minimum length of buffers that may be passed to `encoding_name()`.
-pub const ENCODING_NAME_MAX_LENGTH: usize = 14; // x-mac-cyrillic
-
 /// Newtype for `*const Encoding` in order to be able to implement `Sync` for
 /// it.
 pub struct ConstEncoding(*const Encoding);
@@ -69,6 +66,9 @@ unsafe impl Sync for ConstEncoding {}
 
 // BEGIN GENERATED CODE. PLEASE DO NOT EDIT.
 // Instead, please regenerate using generate-encoding-data.py
+
+/// The minimum length of buffers that may be passed to `encoding_name()`.
+pub const ENCODING_NAME_MAX_LENGTH: usize = 14; // x-mac-cyrillic
 
 /// The Big5 encoding.
 #[no_mangle]
