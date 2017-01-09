@@ -30,8 +30,6 @@ fn main() {
 
     cheddar::Cheddar::new()
         .expect("could not read manifest")
-        .module("ffi")
-        .expect("malformed module path")
         .run_build(path);
 
     match replace(path) {

@@ -23,13 +23,6 @@ If you require the addition of your copyright notice, it's up to you to edit in
 your notice as part of your Contribution. Not adding a copyright notice is
 taken as a waiver of copyright notice.
 
-## No Encodings Beyond The Encoding Standard
-
-Please do not contribute implementations of encodings that are not specified
-in the [Encoding Standard](https://encoding.spec.whatwg.org/).
-
-For example, an implementation of UTF-7 would be explicitly not welcome.
-
 ## Compatibility with Stable Rust
 
 Please ensure that your Contribution compiles with the latest stable-channel
@@ -43,6 +36,3 @@ Please install [`rustfmt`](https://github.com/rust-lang-nursery/rustfmt) 0.4.1
 it unsuited  for encoding_rs) and run `cargo fmt` before creating a pull
 request. (It's OK for `cargo fmt` to exit with an error due to too long lines.)
 
-## Unit tests
-
-Please ensure that `cargo test` succeeds.

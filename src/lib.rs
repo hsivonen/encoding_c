@@ -42,7 +42,9 @@
 //! 8 indicate the length of the malformed byte sequence (possible decimal
 //! values 1, 2 and 3).
 
-use super::*;
+extern crate encoding_rs;
+
+use encoding_rs::*;
 
 /// Return value for `*_decode_*` and `*_encode_*` functions that indicates that
 /// the input has been exhausted.
@@ -56,7 +58,7 @@ pub const INPUT_EMPTY: u32 = 0;
 pub const OUTPUT_FULL: u32 = 0xFFFFFFFF;
 
 /// The minimum length of buffers that may be passed to `encoding_name()`.
-pub const ENCODING_NAME_MAX_LENGTH: usize = super::LONGEST_NAME_LENGTH;
+pub const ENCODING_NAME_MAX_LENGTH: usize = 14; // x-mac-cyrillic
 
 /// Newtype for `*const Encoding` in order to be able to implement `Sync` for
 /// it.
@@ -230,35 +232,33 @@ pub static X_USER_DEFINED_ENCODING: ConstEncoding = ConstEncoding(&X_USER_DEFINE
 
 // END GENERATED CODE
 
-impl CoderResult {
-    fn as_u32(&self) -> u32 {
-        match self {
-            &CoderResult::InputEmpty => INPUT_EMPTY,
-            &CoderResult::OutputFull => OUTPUT_FULL,
-        }
+#[inline(always)]
+fn coder_result_to_u32(result: CoderResult) -> u32 {
+    match result {
+        CoderResult::InputEmpty => INPUT_EMPTY,
+        CoderResult::OutputFull => OUTPUT_FULL,
     }
 }
 
-impl DecoderResult {
-    fn as_u32(&self) -> u32 {
-        match self {
-            &DecoderResult::InputEmpty => INPUT_EMPTY,
-            &DecoderResult::OutputFull => OUTPUT_FULL,
-            &DecoderResult::Malformed(bad, good) => ((good as u32) << 8) | (bad as u32),
-        }
+#[inline(always)]
+fn decoder_result_to_u32(result: DecoderResult) -> u32 {
+    match result {
+        DecoderResult::InputEmpty => INPUT_EMPTY,
+        DecoderResult::OutputFull => OUTPUT_FULL,
+        DecoderResult::Malformed(bad, good) => ((good as u32) << 8) | (bad as u32),
     }
 }
 
-impl EncoderResult {
-    fn as_u32(&self) -> u32 {
-        match self {
-            &EncoderResult::InputEmpty => INPUT_EMPTY,
-            &EncoderResult::OutputFull => OUTPUT_FULL,
-            &EncoderResult::Unmappable(c) => c as u32,
-        }
+#[inline(always)]
+fn encoder_result_to_u32(result: EncoderResult) -> u32 {
+    match result {
+        EncoderResult::InputEmpty => INPUT_EMPTY,
+        EncoderResult::OutputFull => OUTPUT_FULL,
+        EncoderResult::Unmappable(c) => c as u32,
     }
 }
 
+#[inline(always)]
 fn option_to_ptr(opt: Option<&'static Encoding>) -> *const Encoding {
     match opt {
         None => ::std::ptr::null(),
@@ -670,7 +670,7 @@ pub unsafe extern "C" fn decoder_decode_to_utf16_without_replacement(decoder: *m
                                                                                  last);
     *src_len = read;
     *dst_len = written;
-    result.as_u32()
+    decoder_result_to_u32(result)
 }
 
 /// Incrementally decode a byte stream into UTF-8 _without replacement_.
@@ -701,7 +701,7 @@ pub unsafe extern "C" fn decoder_decode_to_utf8_without_replacement(decoder: *mu
                                                                                 last);
     *src_len = read;
     *dst_len = written;
-    result.as_u32()
+    decoder_result_to_u32(result)
 }
 
 /// Incrementally decode a byte stream into UTF-16 with malformed sequences
@@ -733,7 +733,7 @@ pub unsafe extern "C" fn decoder_decode_to_utf16(decoder: *mut Decoder,
     *src_len = read;
     *dst_len = written;
     *had_replacements = replaced;
-    result.as_u32()
+    coder_result_to_u32(result)
 }
 
 /// Incrementally decode a byte stream into UTF-8 with malformed sequences
@@ -765,7 +765,7 @@ pub unsafe extern "C" fn decoder_decode_to_utf8(decoder: *mut Decoder,
     *src_len = read;
     *dst_len = written;
     *had_replacements = replaced;
-    result.as_u32()
+    coder_result_to_u32(result)
 }
 
 /// Deallocates an `Encoder` previously allocated by `encoding_new_encoder()`.
@@ -872,7 +872,7 @@ pub unsafe extern "C" fn encoder_encode_from_utf16_without_replacement(encoder: 
                                                                                    last);
     *src_len = read;
     *dst_len = written;
-    result.as_u32()
+    encoder_result_to_u32(result)
 }
 
 /// Incrementally encode into byte stream from UTF-8 _without replacement_.
@@ -907,7 +907,7 @@ pub unsafe extern "C" fn encoder_encode_from_utf8_without_replacement(encoder: *
                                                                                   last);
     *src_len = read;
     *dst_len = written;
-    result.as_u32()
+    encoder_result_to_u32(result)
 }
 
 /// Incrementally encode into byte stream from UTF-16 with unmappable
@@ -938,7 +938,7 @@ pub unsafe extern "C" fn encoder_encode_from_utf16(encoder: *mut Encoder,
     *src_len = read;
     *dst_len = written;
     *had_replacements = replaced;
-    result.as_u32()
+    coder_result_to_u32(result)
 }
 
 /// Incrementally encode into byte stream from UTF-8 with unmappable
@@ -972,5 +972,5 @@ pub unsafe extern "C" fn encoder_encode_from_utf8(encoder: *mut Encoder,
     *src_len = read;
     *dst_len = written;
     *had_replacements = replaced;
-    result.as_u32()
+    coder_result_to_u32(result)
 }
