@@ -34,7 +34,7 @@ public:
       reinterpret_cast<const uint8_t*>(label.data()), label.length());
   }
 
-  inline const Encoding* for_name(gsl::cstring_span<> name)
+  inline const gsl::not_null<Encoding*> for_name(gsl::cstring_span<> name)
   {
     return encoding_for_name(reinterpret_cast<const uint8_t*>(name.data()),
                              name.length());

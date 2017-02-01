@@ -309,13 +309,16 @@ pub unsafe extern "C" fn encoding_for_label_no_replacement(label: *const u8,
 
 /// If the argument matches exactly (case-sensitively; no whitespace
 /// removal performed) the name of an encoding, returns
-/// `const Encoding*` representing that encoding. Otherwise,
-/// return `NULL`.
+/// `const Encoding*` representing that encoding. Otherwise panics.
 ///
 /// The motivating use case for this function is interoperability with
 /// legacy Gecko code that represents encodings as name string instead of
 /// type-safe `Encoding` objects. Using this function for other purposes is
 /// most likely the wrong thing to do.
+///
+/// # Panics
+///
+/// Panics if the argument is not the name of an encoding.
 ///
 /// # Undefined behavior
 ///
@@ -323,7 +326,7 @@ pub unsafe extern "C" fn encoding_for_label_no_replacement(label: *const u8,
 #[no_mangle]
 pub unsafe extern "C" fn encoding_for_name(name: *const u8, name_len: usize) -> *const Encoding {
     let name_slice = ::std::slice::from_raw_parts(name, name_len);
-    option_to_ptr(Encoding::for_name(name_slice))
+    Encoding::for_name(name_slice)
 }
 
 /// Performs non-incremental BOM sniffing.
