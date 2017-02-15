@@ -15,7 +15,7 @@ build = "build.rs"
 simd-accel = ["encoding_rs/simd-accel"]
 
 [dependencies]
-encoding_rs = { path = "../encoding_rs/" }
+encoding_rs = "0.4.0"
 
 [lib]
 name = "encoding_c"

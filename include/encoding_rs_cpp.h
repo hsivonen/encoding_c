@@ -22,25 +22,25 @@
 class Encoding final
 {
 public:
-  static const Encoding* for_label(gsl::cstring_span<> label)
+  static inline const Encoding* for_label(gsl::cstring_span<> label)
   {
     return encoding_for_label(reinterpret_cast<const uint8_t*>(label.data()),
                               label.length());
   }
 
-  inline const Encoding* for_label_no_replacement(gsl::cstring_span<> label)
+  static inline const Encoding* for_label_no_replacement(gsl::cstring_span<> label)
   {
     return encoding_for_label_no_replacement(
       reinterpret_cast<const uint8_t*>(label.data()), label.length());
   }
 
-  inline const gsl::not_null<Encoding*> for_name(gsl::cstring_span<> name)
+  static inline const gsl::not_null<Encoding*> for_name(gsl::cstring_span<> name)
   {
     return encoding_for_name(reinterpret_cast<const uint8_t*>(name.data()),
                              name.length());
   }
 
-  inline std::tuple<const Encoding*, size_t> for_bom(gsl::span<const uint8_t> buffer)
+  static inline std::tuple<const Encoding*, size_t> for_bom(gsl::span<const uint8_t> buffer)
   {
     size_t len = buffer.size();
     const Encoding* encoding = encoding_for_bom(buffer.data(), &len);
@@ -113,6 +113,21 @@ public:
   inline void new_encoder_into(Encoder* encoder) const
   {
     encoding_new_encoder_into(this, encoder);
+  }
+
+  static inline size_t utf8_valid_up_to(gsl::span<const uint8_t> buffer)
+  {
+    return encoding_utf8_valid_up_to(buffer.data(), buffer.size());
+  }
+
+  static inline size_t ascii_valid_up_to(gsl::span<const uint8_t> buffer)
+  {
+    return encoding_ascii_valid_up_to(buffer.data(), buffer.size());
+  }
+
+  static inline size_t iso_2022_jp_ascii_valid_up_to(gsl::span<const uint8_t> buffer)
+  {
+    return encoding_iso_2022_jp_ascii_valid_up_to(buffer.data(), buffer.size());
   }
 
 private:

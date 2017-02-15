@@ -564,6 +564,51 @@ pub unsafe extern "C" fn encoding_new_encoder_into(encoding: *const Encoding,
     *encoder = (*encoding).new_encoder();
 }
 
+/// Validates UTF-8.
+///
+/// Returns the index of the first byte that makes the input malformed as
+/// UTF-8 or `buffer_len` if `buffer` is entirely valid.
+///
+/// # Undefined behavior
+///
+/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory block.
+#[no_mangle]
+pub unsafe extern "C" fn encoding_utf8_valid_up_to(buffer: *const u8, buffer_len: usize) -> usize {
+    let buffer_slice = ::std::slice::from_raw_parts(buffer, buffer_len);
+    Encoding::utf8_valid_up_to(buffer_slice)
+}
+
+/// Validates ASCII.
+///
+/// Returns the index of the first byte that makes the input malformed as
+/// ASCII or `buffer_len` if `buffer` is entirely valid.
+///
+/// # Undefined behavior
+///
+/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory block.
+#[no_mangle]
+pub unsafe extern "C" fn encoding_ascii_valid_up_to(buffer: *const u8, buffer_len: usize) -> usize {
+    let buffer_slice = ::std::slice::from_raw_parts(buffer, buffer_len);
+    Encoding::ascii_valid_up_to(buffer_slice)
+}
+
+/// Validates ISO-2022-JP ASCII-state data.
+///
+/// Returns the index of the first byte that makes the input not representable
+/// in the ASCII state of ISO-2022-JP or `buffer_len` if `buffer` is entirely
+/// representable in the ASCII state of ISO-2022-JP.
+///
+/// # Undefined behavior
+///
+/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory block.
+#[no_mangle]
+pub unsafe extern "C" fn encoding_iso_2022_jp_ascii_valid_up_to(buffer: *const u8,
+                                                                buffer_len: usize)
+                                                                -> usize {
+    let buffer_slice = ::std::slice::from_raw_parts(buffer, buffer_len);
+    Encoding::iso_2022_jp_ascii_valid_up_to(buffer_slice)
+}
+
 /// Deallocates a `Decoder` previously allocated by `encoding_new_decoder()`.
 ///
 /// # Undefined behavior
