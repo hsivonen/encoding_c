@@ -34,7 +34,7 @@ public:
       reinterpret_cast<const uint8_t*>(label.data()), label.length());
   }
 
-  static inline const gsl::not_null<Encoding*> for_name(gsl::cstring_span<> name)
+  static inline gsl::not_null<const Encoding*> for_name(gsl::cstring_span<> name)
   {
     return encoding_for_name(reinterpret_cast<const uint8_t*>(name.data()),
                              name.length());
@@ -66,7 +66,7 @@ public:
     return encoding_is_ascii_compatible(this);
   }
 
-  inline const Encoding* output_encoding() const
+  inline gsl::not_null<const Encoding*> output_encoding() const
   {
     return encoding_output_encoding(this);
   }
@@ -141,7 +141,7 @@ public:
   ~Decoder() {}
   static void operator delete(void* decoder) { decoder_free(reinterpret_cast<Decoder*>(decoder)); }
 
-  inline const Encoding* encoding() const { return decoder_encoding(this); }
+  inline gsl::not_null<const Encoding*> encoding() const { return decoder_encoding(this); }
 
   inline size_t max_utf16_buffer_length(size_t u16_length) const
   {
@@ -214,7 +214,7 @@ public:
   ~Encoder() {}
   static void operator delete(void* encoder) { encoder_free(reinterpret_cast<Encoder*>(encoder)); }
 
-  inline const Encoding* encoding() const { return encoder_encoding(this); }
+  inline gsl::not_null<const Encoding*> encoding() const { return encoder_encoding(this); }
 
   inline size_t max_buffer_length_from_utf16_without_replacement(size_t u16_length) const
   {
