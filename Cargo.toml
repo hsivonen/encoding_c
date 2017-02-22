@@ -17,13 +17,5 @@ simd-accel = ["encoding_rs/simd-accel"]
 [dependencies]
 encoding_rs = "0.4.0"
 
-[lib]
-name = "encoding_c"
-# The below line confuses rustfmt. Uncomment to build a staticlib.
-# crate-type = ["rlib", "staticlib"]
-
 [build-dependencies]
 rusty-cheddar = "0.3.3"
-
-[profile.release]
-lto = true
