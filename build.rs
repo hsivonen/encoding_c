@@ -26,10 +26,23 @@ fn replace(path: &str) -> std::io::Result<()> {
 }
 
 fn main() {
+    println!("cargo:rerun-if-changed=src/lib.rs");
+    
     let path = "target/include/encoding_rs.h";
 
     cheddar::Cheddar::new()
         .expect("could not read manifest")
+        .insert_code("// Copyright 2015-2016 Mozilla Foundation. See the COPYRIGHT\n")
+        .insert_code("// file at the top-level directory of this distribution.\n")
+        .insert_code("//\n")
+        .insert_code("// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or\n")
+        .insert_code("// https://www.apache.org/licenses/LICENSE-2.0> or the MIT license\n")
+        .insert_code("// <LICENSE-MIT or https://opensource.org/licenses/MIT>, at your\n")
+        .insert_code("// option. This file may not be copied, modified, or distributed\n")
+        .insert_code("// except according to those terms.\n")
+        .insert_code("\n")
+        .insert_code("// THIS IS A GENERATED FILE. PLEASE DO NOT EDIT.\n")
+        .insert_code("// Instead, please regenerate using encoding_c/build.rs.\n")
         .run_build(path);
 
     match replace(path) {
