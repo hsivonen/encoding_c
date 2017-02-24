@@ -826,10 +826,10 @@ public:
         bytes,
         gsl::make_span(reinterpret_cast<uint8_t*>(&string[0]), string.size()),
         true);
-    assert(read == static_cast<size_t>(bytes.size()));
-    assert(written <= static_cast<size_t>(string.size()));
     assert(result != OUTPUT_FULL);
     if (result == INPUT_EMPTY) {
+      assert(read == static_cast<size_t>(bytes.size()));
+      assert(written <= static_cast<size_t>(string.size()));
       string.resize(written);
       return string;
     }
@@ -977,10 +977,10 @@ public:
         bytes,
         gsl::make_span(&string[0], string.size()),
         true);
-    assert(read == static_cast<size_t>(bytes.size()));
-    assert(written <= static_cast<size_t>(string.size()));
     assert(result != OUTPUT_FULL);
     if (result == INPUT_EMPTY) {
+      assert(read == static_cast<size_t>(bytes.size()));
+      assert(written <= static_cast<size_t>(string.size()));
       string.resize(written);
       return string;
     }
