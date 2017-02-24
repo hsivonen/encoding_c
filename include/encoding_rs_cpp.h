@@ -12,11 +12,11 @@
 #ifndef encoding_rs_cpp_h_
 #define encoding_rs_cpp_h_
 
+#include "gsl/gsl"
+#include <experimental/optional>
+#include <memory>
 #include <string>
 #include <tuple>
-#include <memory>
-#include <experimental/optional>
-#include "gsl/gsl"
 
 #include "encoding_rs.h"
 
@@ -120,7 +120,10 @@ class Decoder final
 {
 public:
   ~Decoder() {}
-  static void operator delete(void* decoder) { decoder_free(reinterpret_cast<Decoder*>(decoder)); }
+  static void operator delete(void* decoder)
+  {
+    decoder_free(reinterpret_cast<Decoder*>(decoder));
+  }
 
   /**
    * The `Encoding` this `Decoder` is for.
@@ -128,7 +131,10 @@ public:
    * BOM sniffing can change the return value of this method during the life
    * of the decoder.
    */
-  inline gsl::not_null<const Encoding*> encoding() const { return decoder_encoding(this); }
+  inline gsl::not_null<const Encoding*> encoding() const
+  {
+    return decoder_encoding(this);
+  }
 
   /**
    * Query the worst-case UTF-8 output size _with replacement_.
@@ -155,9 +161,11 @@ public:
    * Note that this value may be too small for the `_with_replacement` case.
    * Use `max_utf8_buffer_length()` for that case.
    */
-  inline size_t max_utf8_buffer_length_without_replacement(size_t byte_length) const
+  inline size_t max_utf8_buffer_length_without_replacement(
+    size_t byte_length) const
   {
-    return decoder_max_utf8_buffer_length_without_replacement(this, byte_length);
+    return decoder_max_utf8_buffer_length_without_replacement(this,
+                                                              byte_length);
   }
 
   /**
@@ -167,16 +175,15 @@ public:
    * See the documentation of the class for documentation for `decode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t, bool>
-  decode_to_utf8(gsl::span<const uint8_t> src, gsl::span<uint8_t> dst,
-                                  bool last)
+  inline std::tuple<uint32_t, size_t, size_t, bool> decode_to_utf8(
+    gsl::span<const uint8_t> src, gsl::span<uint8_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
     bool had_replacements;
-    uint32_t result = decoder_decode_to_utf8(
-      this, src.data(), &src_read, dst.data(), &dst_written, last,
-      &had_replacements);
+    uint32_t result =
+      decoder_decode_to_utf8(this, src.data(), &src_read, dst.data(),
+                             &dst_written, last, &had_replacements);
     return std::make_tuple(result, src_read, dst_written, had_replacements);
   }
 
@@ -186,13 +193,14 @@ public:
    * See the documentation of the class for documentation for `decode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t> decode_to_utf8_without_replacement(
-    gsl::span<const uint8_t> src, gsl::span<uint8_t> dst, bool last)
+  inline std::tuple<uint32_t, size_t, size_t>
+  decode_to_utf8_without_replacement(gsl::span<const uint8_t> src,
+                                     gsl::span<uint8_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
-    uint32_t result = decoder_decode_to_utf8_without_replacement(this, src.data(), &src_read,
-                                             dst.data(), &dst_written, last);
+    uint32_t result = decoder_decode_to_utf8_without_replacement(
+      this, src.data(), &src_read, dst.data(), &dst_written, last);
     return std::make_tuple(result, src_read, dst_written);
   }
 
@@ -219,16 +227,15 @@ public:
    * See the documentation of the class for documentation for `decode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t, bool>
-  decode_to_utf16(gsl::span<const uint8_t> src, gsl::span<char16_t> dst,
-                                   bool last)
+  inline std::tuple<uint32_t, size_t, size_t, bool> decode_to_utf16(
+    gsl::span<const uint8_t> src, gsl::span<char16_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
     bool had_replacements;
-    uint32_t result = decoder_decode_to_utf16(
-      this, src.data(), &src_read, dst.data(), &dst_written, last,
-      &had_replacements);
+    uint32_t result =
+      decoder_decode_to_utf16(this, src.data(), &src_read, dst.data(),
+                              &dst_written, last, &had_replacements);
     return std::make_tuple(result, src_read, dst_written, had_replacements);
   }
 
@@ -238,13 +245,14 @@ public:
    * See the documentation of the class for documentation for `decode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t> decode_to_utf16_without_replacement(
-    gsl::span<const uint8_t> src, gsl::span<char16_t> dst, bool last)
+  inline std::tuple<uint32_t, size_t, size_t>
+  decode_to_utf16_without_replacement(gsl::span<const uint8_t> src,
+                                      gsl::span<char16_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
-    uint32_t result = decoder_decode_to_utf16_without_replacement(this, src.data(), &src_read,
-                                              dst.data(), &dst_written, last);
+    uint32_t result = decoder_decode_to_utf16_without_replacement(
+      this, src.data(), &src_read, dst.data(), &dst_written, last);
     return std::make_tuple(result, src_read, dst_written);
   }
 
@@ -361,12 +369,18 @@ class Encoder final
 public:
   ~Encoder() {}
 
-  static void operator delete(void* encoder) { encoder_free(reinterpret_cast<Encoder*>(encoder)); }
+  static void operator delete(void* encoder)
+  {
+    encoder_free(reinterpret_cast<Encoder*>(encoder));
+  }
 
   /**
    * The `Encoding` this `Encoder` is for.
    */
-  inline gsl::not_null<const Encoding*> encoding() const { return encoder_encoding(this); }
+  inline gsl::not_null<const Encoding*> encoding() const
+  {
+    return encoder_encoding(this);
+  }
 
   /**
    * Query the worst-case output size when encoding from UTF-8 with
@@ -380,8 +394,8 @@ public:
   inline size_t max_buffer_length_from_utf8_if_no_unmappables(
     size_t byte_length) const
   {
-    return encoder_max_buffer_length_from_utf8_if_no_unmappables(
-      this, byte_length);
+    return encoder_max_buffer_length_from_utf8_if_no_unmappables(this,
+                                                                 byte_length);
   }
 
   /**
@@ -392,9 +406,11 @@ public:
    * given the current state of the encoder and `byte_length` number of
    * additional input code units.
    */
-  inline size_t max_buffer_length_from_utf8_without_replacement(size_t byte_length) const
+  inline size_t max_buffer_length_from_utf8_without_replacement(
+    size_t byte_length) const
   {
-    return encoder_max_buffer_length_from_utf8_without_replacement(this, byte_length);
+    return encoder_max_buffer_length_from_utf8_without_replacement(this,
+                                                                   byte_length);
   }
 
   /**
@@ -404,16 +420,15 @@ public:
    * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t, bool>
-  encode_from_utf8(gsl::span<const uint8_t> src, gsl::span<uint8_t> dst,
-                                    bool last)
+  inline std::tuple<uint32_t, size_t, size_t, bool> encode_from_utf8(
+    gsl::span<const uint8_t> src, gsl::span<uint8_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
     bool had_replacements;
-    uint32_t result = encoder_encode_from_utf8(
-      this, src.data(), &src_read, dst.data(), &dst_written, last,
-      &had_replacements);
+    uint32_t result =
+      encoder_encode_from_utf8(this, src.data(), &src_read, dst.data(),
+                               &dst_written, last, &had_replacements);
     return std::make_tuple(result, src_read, dst_written, had_replacements);
   }
 
@@ -423,13 +438,14 @@ public:
    * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t> encode_from_utf8_without_replacement(
-    gsl::span<const uint8_t> src, gsl::span<uint8_t> dst, bool last)
+  inline std::tuple<uint32_t, size_t, size_t>
+  encode_from_utf8_without_replacement(gsl::span<const uint8_t> src,
+                                       gsl::span<uint8_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
-    uint32_t result = encoder_encode_from_utf8_without_replacement(this, src.data(), &src_read,
-                                               dst.data(), &dst_written, last);
+    uint32_t result = encoder_encode_from_utf8_without_replacement(
+      this, src.data(), &src_read, dst.data(), &dst_written, last);
     return std::make_tuple(result, src_read, dst_written);
   }
 
@@ -445,8 +461,8 @@ public:
   inline size_t max_buffer_length_from_utf16_if_no_unmappables(
     size_t u16_length) const
   {
-    return encoder_max_buffer_length_from_utf16_if_no_unmappables(
-      this, u16_length);
+    return encoder_max_buffer_length_from_utf16_if_no_unmappables(this,
+                                                                  u16_length);
   }
 
   /**
@@ -457,9 +473,11 @@ public:
    * given the current state of the encoder and `u16_length` number of
    * additional input code units.
    */
-  inline size_t max_buffer_length_from_utf16_without_replacement(size_t u16_length) const
+  inline size_t max_buffer_length_from_utf16_without_replacement(
+    size_t u16_length) const
   {
-    return encoder_max_buffer_length_from_utf16_without_replacement(this, u16_length);
+    return encoder_max_buffer_length_from_utf16_without_replacement(this,
+                                                                    u16_length);
   }
 
   /**
@@ -469,16 +487,15 @@ public:
    * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t, bool>
-  encode_from_utf16(gsl::span<const char16_t> src,
-                                     gsl::span<uint8_t> dst, bool last)
+  inline std::tuple<uint32_t, size_t, size_t, bool> encode_from_utf16(
+    gsl::span<const char16_t> src, gsl::span<uint8_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
     bool had_replacements;
-    uint32_t result = encoder_encode_from_utf16(
-      this, src.data(), &src_read, dst.data(), &dst_written, last,
-      &had_replacements);
+    uint32_t result =
+      encoder_encode_from_utf16(this, src.data(), &src_read, dst.data(),
+                                &dst_written, last, &had_replacements);
     return std::make_tuple(result, src_read, dst_written, had_replacements);
   }
 
@@ -488,13 +505,14 @@ public:
    * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t> encode_from_utf16_without_replacement(
-    gsl::span<const char16_t> src, gsl::span<uint8_t> dst, bool last)
+  inline std::tuple<uint32_t, size_t, size_t>
+  encode_from_utf16_without_replacement(gsl::span<const char16_t> src,
+                                        gsl::span<uint8_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
-    uint32_t result = encoder_encode_from_utf16_without_replacement(this, src.data(), &src_read,
-                                                dst.data(), &dst_written, last);
+    uint32_t result = encoder_encode_from_utf16_without_replacement(
+      this, src.data(), &src_read, dst.data(), &dst_written, last);
     return std::make_tuple(result, src_read, dst_written);
   }
 
@@ -553,7 +571,6 @@ private:
 class Encoding final
 {
 public:
-
   /**
    * Implements the _get an encoding_ algorithm
    * (https://encoding.spec.whatwg.org/#concept-encoding-get).
@@ -578,7 +595,8 @@ public:
    * to treat the labels that map to the replacement encoding as fatal
    * errors, too.
    */
-  static inline const Encoding* for_label_no_replacement(gsl::cstring_span<> label)
+  static inline const Encoding* for_label_no_replacement(
+    gsl::cstring_span<> label)
   {
     return encoding_for_label_no_replacement(
       reinterpret_cast<const uint8_t*>(label.data()), label.length());
@@ -595,7 +613,8 @@ public:
    * or `make_tuple(UTF_16BE_ENCODING, 3)` if the argument starts with the
    * UTF-8, UTF-16LE or UTF-16BE BOM or `make_tuple(nullptr, 0)` otherwise.
    */
-  static inline std::tuple<const Encoding*, size_t> for_bom(gsl::span<const uint8_t> buffer)
+  static inline std::tuple<const Encoding*, size_t> for_bom(
+    gsl::span<const uint8_t> buffer)
   {
     size_t len = buffer.size();
     const Encoding* encoding = encoding_for_bom(buffer.data(), &len);
@@ -616,7 +635,8 @@ public:
    *
    * Panics if the argument is not the name of an encoding.
    */
-  static inline gsl::not_null<const Encoding*> for_name(gsl::cstring_span<> name)
+  static inline gsl::not_null<const Encoding*> for_name(
+    gsl::cstring_span<> name)
   {
     return encoding_for_name(reinterpret_cast<const uint8_t*>(name.data()),
                              name.length());
@@ -683,7 +703,9 @@ public:
    * a segment of the input instead of the whole input. Use `new_decoder()`
    * when decoding segmented input.
    */
-  inline std::tuple<std::string, const Encoding*, bool> decode(gsl::span<const uint8_t> bytes) const {
+  inline std::tuple<std::string, const Encoding*, bool> decode(
+    gsl::span<const uint8_t> bytes) const
+  {
     const Encoding* encoding;
     size_t bom_length;
     std::tie(encoding, bom_length) = Encoding::for_bom(bytes);
@@ -715,12 +737,20 @@ public:
    * a segment of the input instead of the whole input. Use
    * `new_decoder_with_bom_removal()` when decoding segmented input.
    */
-  inline std::tuple<std::string, bool> decode_with_bom_removal(gsl::span<const uint8_t> bytes) const {
-    if (this == UTF_8_ENCODING && bytes.size() >= 3 && (gsl::as_bytes(bytes.first<3>()) == gsl::as_bytes(gsl::make_span("\xEF\xBB\xBF")))) {
+  inline std::tuple<std::string, bool> decode_with_bom_removal(
+    gsl::span<const uint8_t> bytes) const
+  {
+    if (this == UTF_8_ENCODING && bytes.size() >= 3 &&
+        (gsl::as_bytes(bytes.first<3>()) ==
+         gsl::as_bytes(gsl::make_span("\xEF\xBB\xBF")))) {
       bytes = bytes.subspan(3, bytes.size() - 3);
-    } else if (this == UTF_16LE_ENCODING && bytes.size() >= 2 && (gsl::as_bytes(bytes.first<2>()) == gsl::as_bytes(gsl::make_span("\xFF\xFE")))) {
+    } else if (this == UTF_16LE_ENCODING && bytes.size() >= 2 &&
+               (gsl::as_bytes(bytes.first<2>()) ==
+                gsl::as_bytes(gsl::make_span("\xFF\xFE")))) {
       bytes = bytes.subspan(2, bytes.size() - 2);
-    } else if (this == UTF_16BE_ENCODING && bytes.size() >= 2 && (gsl::as_bytes(bytes.first<2>()) == gsl::as_bytes(gsl::make_span("\xFE\xFF")))) {
+    } else if (this == UTF_16BE_ENCODING && bytes.size() >= 2 &&
+               (gsl::as_bytes(bytes.first<2>()) ==
+                gsl::as_bytes(gsl::make_span("\xFE\xFF")))) {
       bytes = bytes.subspan(2, bytes.size() - 2);
     }
     return decode_without_bom_handling(bytes);
@@ -743,14 +773,19 @@ public:
    * a segment of the input instead of the whole input. Use
    * `new_decoder_without_bom_handling()` when decoding segmented input.
    */
-  inline std::tuple<std::string, bool> decode_without_bom_handling(gsl::span<const uint8_t> bytes) const {
+  inline std::tuple<std::string, bool> decode_without_bom_handling(
+    gsl::span<const uint8_t> bytes) const
+  {
     auto decoder = new_decoder_without_bom_handling();
     std::string string(decoder->max_utf8_buffer_length(bytes.size()), '\0');
     uint32_t result;
     size_t read;
     size_t written;
     bool had_errors;
-    std::tie(result, read, written, had_errors) = decoder->decode_to_utf8(bytes, gsl::make_span(reinterpret_cast<uint8_t*>(&string[0]), string.size()), true);
+    std::tie(result, read, written, had_errors) = decoder->decode_to_utf8(
+      bytes,
+      gsl::make_span(reinterpret_cast<uint8_t*>(&string[0]), string.size()),
+      true);
     assert(read == static_cast<size_t>(bytes.size()));
     assert(written <= static_cast<size_t>(string.size()));
     assert(result == INPUT_EMPTY);
@@ -776,13 +811,21 @@ public:
    * a segment of the input instead of the whole input. Use
    * `new_decoder_without_bom_handling()` when decoding segmented input.
    */
-  inline std::experimental::optional<std::string> decode_without_bom_handling_and_without_replacement(gsl::span<const uint8_t> bytes) const {
+  inline std::experimental::optional<std::string>
+  decode_without_bom_handling_and_without_replacement(
+    gsl::span<const uint8_t> bytes) const
+  {
     auto decoder = new_decoder_without_bom_handling();
-    std::string string(decoder->max_utf8_buffer_length_without_replacement(bytes.size()), '\0');
+    std::string string(
+      decoder->max_utf8_buffer_length_without_replacement(bytes.size()), '\0');
     uint32_t result;
     size_t read;
     size_t written;
-    std::tie(result, read, written) = decoder->decode_to_utf8_without_replacement(bytes, gsl::make_span(reinterpret_cast<uint8_t*>(&string[0]), string.size()), true);
+    std::tie(result, read, written) =
+      decoder->decode_to_utf8_without_replacement(
+        bytes,
+        gsl::make_span(reinterpret_cast<uint8_t*>(&string[0]), string.size()),
+        true);
     assert(read == static_cast<size_t>(bytes.size()));
     assert(written <= static_cast<size_t>(string.size()));
     assert(result != OUTPUT_FULL);
@@ -813,14 +856,17 @@ public:
    * a segment of the input instead of the whole input. Use `new_encoder()`
    * when encoding segmented output.
    */
-  inline std::tuple<std::vector<uint8_t>, const Encoding*, bool> encode(gsl::span<const uint8_t> string) const {
+  inline std::tuple<std::vector<uint8_t>, const Encoding*, bool> encode(
+    gsl::span<const uint8_t> string) const
+  {
     auto output_enc = output_encoding();
     if (output_enc == UTF_8_ENCODING) {
       std::vector<uint8_t> vec(string.size());
       std::memcpy(&vec[0], string.data(), string.size());
     }
     auto encoder = output_enc->new_encoder();
-    std::vector<uint8_t> vec(encoder->max_buffer_length_from_utf8_if_no_unmappables(string.size()));
+    std::vector<uint8_t> vec(
+      encoder->max_buffer_length_from_utf8_if_no_unmappables(string.size()));
     bool total_had_errors = false;
     size_t total_read = 0;
     size_t total_written = 0;
@@ -829,7 +875,8 @@ public:
     size_t written;
     bool had_errors;
     for (;;) {
-      std::tie(result, read, written, had_errors) = encoder->encode_from_utf8(gsl::make_span(string).subspan(total_read), vec, true);
+      std::tie(result, read, written, had_errors) = encoder->encode_from_utf8(
+        gsl::make_span(string).subspan(total_read), vec, true);
       total_read += read;
       total_written += written;
       total_had_errors |= had_errors;
@@ -839,7 +886,8 @@ public:
         vec.resize(total_written);
         return std::make_tuple(vec, output_enc, total_had_errors);
       }
-      auto needed = encoder->max_buffer_length_from_utf8_if_no_unmappables(string.size() - total_read);
+      auto needed = encoder->max_buffer_length_from_utf8_if_no_unmappables(
+        string.size() - total_read);
       vec.resize(total_written + needed);
     }
   }
@@ -879,7 +927,8 @@ public:
    */
   inline std::unique_ptr<Decoder> new_decoder_with_bom_removal() const
   {
-    std::unique_ptr<Decoder> decoder(encoding_new_decoder_with_bom_removal(this));
+    std::unique_ptr<Decoder> decoder(
+      encoding_new_decoder_with_bom_removal(this));
     return decoder;
   }
 
@@ -911,7 +960,8 @@ public:
    */
   inline std::unique_ptr<Decoder> new_decoder_without_bom_handling() const
   {
-    std::unique_ptr<Decoder> decoder(encoding_new_decoder_without_bom_handling(this));
+    std::unique_ptr<Decoder> decoder(
+      encoding_new_decoder_without_bom_handling(this));
     return decoder;
   }
 
@@ -980,7 +1030,8 @@ public:
    * input if the input is entirely representable in the ASCII state of
    * ISO-2022-JP.
    */
-  static inline size_t iso_2022_jp_ascii_valid_up_to(gsl::span<const uint8_t> buffer)
+  static inline size_t iso_2022_jp_ascii_valid_up_to(
+    gsl::span<const uint8_t> buffer)
   {
     return encoding_iso_2022_jp_ascii_valid_up_to(buffer.data(), buffer.size());
   }
