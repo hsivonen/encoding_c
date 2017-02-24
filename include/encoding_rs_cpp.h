@@ -1027,7 +1027,7 @@ public:
     bool had_errors;
     for (;;) {
       std::tie(result, read, written, had_errors) = encoder->encode_from_utf8(
-        gsl::make_span(string).subspan(total_read), vec, true);
+        gsl::make_span(string).subspan(total_read), gsl::make_span(vec).subspan(total_written), true);
       total_read += read;
       total_written += written;
       total_had_errors |= had_errors;
@@ -1080,7 +1080,7 @@ public:
     bool had_errors;
     for (;;) {
       std::tie(result, read, written, had_errors) = encoder->encode_from_utf16(
-        gsl::make_span(string).subspan(total_read), vec, true);
+        gsl::make_span(string).subspan(total_read), gsl::make_span(vec).subspan(total_written), true);
       total_read += read;
       total_written += written;
       total_had_errors |= had_errors;
