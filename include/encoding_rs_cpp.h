@@ -1178,7 +1178,7 @@ public:
    * for another encoding.)
    *
    * _Note:_ If the caller has performed BOM sniffing on its own but has not
-   * removed the BOM, the caller should use `new_decoder_with_bom_removal()`
+   * removed the BOM, the caller should use `new_decoder_with_bom_removal_into()`
    * instead of this method to cause the BOM to be removed.
    */
   inline void new_decoder_without_bom_handling_into(Decoder& decoder) const
