@@ -836,6 +836,157 @@ public:
   }
 
   /**
+   * Decode complete input to `std::u16string` _with BOM sniffing_ and with
+   * malformed sequences replaced with the REPLACEMENT CHARACTER when the
+   * entire input is available as a single buffer (i.e. the end of the
+   * buffer marks the end of the stream).
+   *
+   * This method implements the (non-streaming version of) the
+   * _decode_ (https://encoding.spec.whatwg.org/#decode) spec concept.
+   *
+   * The second item in the returned tuple is the encoding that was actually
+   * used (which may differ from this encoding thanks to BOM sniffing).
+   *
+   * The third item in the returned tuple indicates whether there were
+   * malformed sequences (that were replaced with the REPLACEMENT CHARACTER).
+   *
+   * _Note:_ It is wrong to use this when the input buffer represents only
+   * a segment of the input instead of the whole input. Use `new_decoder()`
+   * when decoding segmented input.
+   */
+  inline std::tuple<std::u16string, const Encoding*, bool> decode16(
+    gsl::span<const uint8_t> bytes) const
+  {
+    const Encoding* encoding;
+    size_t bom_length;
+    std::tie(encoding, bom_length) = Encoding::for_bom(bytes);
+    if (encoding) {
+      bytes = bytes.subspan(bom_length);
+    } else {
+      encoding = this;
+    }
+    bool had_errors;
+    std::u16string str;
+    std::tie(str, had_errors) = encoding->decode16_without_bom_handling(bytes);
+    return std::make_tuple(str, encoding, had_errors);
+  }
+
+  /**
+   * Decode complete input to `std::u16string` _with BOM removal_ and with
+   * malformed sequences replaced with the REPLACEMENT CHARACTER when the
+   * entire input is available as a single buffer (i.e. the end of the
+   * buffer marks the end of the stream).
+   *
+   * When invoked on `UTF_8`, this method implements the (non-streaming
+   * version of) the _UTF-8 decode_
+   * (https://encoding.spec.whatwg.org/#utf-8-decode) spec concept.
+   *
+   * The second item in the returned pair indicates whether there were
+   * malformed sequences (that were replaced with the REPLACEMENT CHARACTER).
+   *
+   * _Note:_ It is wrong to use this when the input buffer represents only
+   * a segment of the input instead of the whole input. Use
+   * `new_decoder_with_bom_removal()` when decoding segmented input.
+   */
+  inline std::tuple<std::u16string, bool> decode16_with_bom_removal(
+    gsl::span<const uint8_t> bytes) const
+  {
+    if (this == UTF_8_ENCODING && bytes.size() >= 3 &&
+        (gsl::as_bytes(bytes.first<3>()) ==
+         gsl::as_bytes(gsl::make_span("\xEF\xBB\xBF")))) {
+      bytes = bytes.subspan(3, bytes.size() - 3);
+    } else if (this == UTF_16LE_ENCODING && bytes.size() >= 2 &&
+               (gsl::as_bytes(bytes.first<2>()) ==
+                gsl::as_bytes(gsl::make_span("\xFF\xFE")))) {
+      bytes = bytes.subspan(2, bytes.size() - 2);
+    } else if (this == UTF_16BE_ENCODING && bytes.size() >= 2 &&
+               (gsl::as_bytes(bytes.first<2>()) ==
+                gsl::as_bytes(gsl::make_span("\xFE\xFF")))) {
+      bytes = bytes.subspan(2, bytes.size() - 2);
+    }
+    return decode16_without_bom_handling(bytes);
+  }
+
+  /**
+   * Decode complete input to `std::u16string` _without BOM handling_ and
+   * with malformed sequences replaced with the REPLACEMENT CHARACTER when
+   * the entire input is available as a single buffer (i.e. the end of the
+   * buffer marks the end of the stream).
+   *
+   * When invoked on `UTF_8`, this method implements the (non-streaming
+   * version of) the _UTF-8 decode without BOM_
+   * (https://encoding.spec.whatwg.org/#utf-8-decode-without-bom) spec concept.
+   *
+   * The second item in the returned pair indicates whether there were
+   * malformed sequences (that were replaced with the REPLACEMENT CHARACTER).
+   *
+   * _Note:_ It is wrong to use this when the input buffer represents only
+   * a segment of the input instead of the whole input. Use
+   * `new_decoder_without_bom_handling()` when decoding segmented input.
+   */
+  inline std::tuple<std::u16string, bool> decode16_without_bom_handling(
+    gsl::span<const uint8_t> bytes) const
+  {
+    auto decoder = new_decoder_without_bom_handling();
+    std::u16string string(decoder->max_utf16_buffer_length(bytes.size()), '\0');
+    uint32_t result;
+    size_t read;
+    size_t written;
+    bool had_errors;
+    std::tie(result, read, written, had_errors) = decoder->decode_to_utf16(
+      bytes,
+      gsl::make_span(&string[0], string.size()),
+      true);
+    assert(read == static_cast<size_t>(bytes.size()));
+    assert(written <= static_cast<size_t>(string.size()));
+    assert(result == INPUT_EMPTY);
+    string.resize(written);
+    return std::make_tuple(string, had_errors);
+  }
+
+  /**
+   * Decode complete input to `std::u16string` _without BOM handling_ and
+   * _with malformed sequences treated as fatal_ when the entire input is
+   * available as a single buffer (i.e. the end of the buffer marks the end
+   * of the stream).
+   *
+   * When invoked on `UTF_8`, this method implements the (non-streaming
+   * version of) the _UTF-8 decode without BOM or fail_
+   * (https://encoding.spec.whatwg.org/#utf-8-decode-without-bom-or-fail)
+   * spec concept.
+   *
+   * Returns `None` if a malformed sequence was encountered and the result
+   * of the decode as `Some(String)` otherwise.
+   *
+   * _Note:_ It is wrong to use this when the input buffer represents only
+   * a segment of the input instead of the whole input. Use
+   * `new_decoder_without_bom_handling()` when decoding segmented input.
+   */
+  inline std::experimental::optional<std::u16string>
+  decode16_without_bom_handling_and_without_replacement(
+    gsl::span<const uint8_t> bytes) const
+  {
+    auto decoder = new_decoder_without_bom_handling();
+    std::u16string string(
+      decoder->max_utf16_buffer_length(bytes.size()), '\0');
+    uint32_t result;
+    size_t read;
+    size_t written;
+    std::tie(result, read, written) =
+      decoder->decode_to_utf16_without_replacement(
+        bytes,
+        gsl::make_span(&string[0], string.size()),
+        true);
+    assert(read == static_cast<size_t>(bytes.size()));
+    assert(written <= static_cast<size_t>(string.size()));
+    assert(result != OUTPUT_FULL);
+    if (result == INPUT_EMPTY) {
+      string.resize(written);
+      return string;
+    }
+  }
+
+  /**
    * Encode complete input to `std::vector<uint8_t>` with unmappable characters
    * replaced with decimal numeric character references when the entire input
    * is available as a single buffer (i.e. the end of the buffer marks the
@@ -887,6 +1038,59 @@ public:
         return std::make_tuple(vec, output_enc, total_had_errors);
       }
       auto needed = encoder->max_buffer_length_from_utf8_if_no_unmappables(
+        string.size() - total_read);
+      vec.resize(total_written + needed);
+    }
+  }
+
+  /**
+   * Encode complete input to `std::vector<uint8_t>` with unmappable characters
+   * replaced with decimal numeric character references when the entire input
+   * is available as a single buffer (i.e. the end of the buffer marks the
+   * end of the stream).
+   *
+   * This method implements the (non-streaming version of) the
+   * _encode_ (https://encoding.spec.whatwg.org/#encode) spec concept.
+   *
+   * The second item in the returned tuple is the encoding that was actually
+   * used (which may differ from this encoding thanks to some encodings
+   * having UTF-8 as their output encoding).
+   *
+   * The third item in the returned tuple indicates whether there were
+   * unmappable characters (that were replaced with HTML numeric character
+   * references).
+   *
+   * _Note:_ It is wrong to use this when the input buffer represents only
+   * a segment of the input instead of the whole input. Use `new_encoder()`
+   * when encoding segmented output.
+   */
+  inline std::tuple<std::vector<uint8_t>, const Encoding*, bool> encode(
+    gsl::span<const char16_t> string) const
+  {
+    auto output_enc = output_encoding();
+    auto encoder = output_enc->new_encoder();
+    std::vector<uint8_t> vec(
+      encoder->max_buffer_length_from_utf16_if_no_unmappables(string.size()));
+    bool total_had_errors = false;
+    size_t total_read = 0;
+    size_t total_written = 0;
+    uint32_t result;
+    size_t read;
+    size_t written;
+    bool had_errors;
+    for (;;) {
+      std::tie(result, read, written, had_errors) = encoder->encode_from_utf16(
+        gsl::make_span(string).subspan(total_read), vec, true);
+      total_read += read;
+      total_written += written;
+      total_had_errors |= had_errors;
+      if (result == INPUT_EMPTY) {
+        assert(total_read == static_cast<size_t>(string.size()));
+        assert(total_written <= static_cast<size_t>(vec.size()));
+        vec.resize(total_written);
+        return std::make_tuple(vec, output_enc, total_had_errors);
+      }
+      auto needed = encoder->max_buffer_length_from_utf16_if_no_unmappables(
         string.size() - total_read);
       vec.resize(total_written + needed);
     }
