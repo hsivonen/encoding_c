@@ -44,23 +44,24 @@ class Encoding;
  *
  * The `decode_*` method then returns tuple of a status indicating which one
  * of the three reasons to return happened, how many input bytes were read,
- * how many output code units (`u8` when decoding into UTF-8 and `u16`
- * when decoding to UTF-16) were written (except when decoding into `String`,
- * whose length change indicates this), and in the case of the
+ * how many output code units (`uint8_t` when decoding into UTF-8 and `char16_t`
+ * when decoding to UTF-16) were written, and in the case of the
  * variants performing replacement, a boolean indicating whether an error was
  * replaced with the REPLACEMENT CHARACTER during the call.
  *
  * The number of bytes "written" is what's logically written. Garbage may be
  * written in the output buffer beyond the point logically written to.
- * Therefore, if you wish to decode into an `&mut str`, you should use the
- * methods that take an `&mut str` argument instead of the ones that take an
- * `&mut [u8]` argument. The former take care of overwriting the trailing
- * garbage to ensure the UTF-8 validitiy of the `&mut str` as a whole, but the
- * latter don't.
  *
  * In the case of the `*_without_replacement` variants, the status is a
- * [`DecoderResult`][1] enumeration (possibilities `Malformed`, `OutputFull` and
- * `InputEmpty` corresponding to the three cases listed above).
+ * `uint32_t` whose possible values are packed info about a malformed byte
+ * sequence, `OUTPUT_FULL` and `INPUT_EMPTY` corresponding to the three cases
+ * listed above).
+ *
+ * Packed info about malformed sequences has the following format:
+ * The lowest 8 bits, which can have the decimal value 0, 1, 2 or 3, indicate
+ * the number of bytes that were consumed after the malformed sequence and the
+ *  next-lowest 8 bits, when shifted right by 8 indicate the length of the
+ *  malformed byte sequence (possible decimal values 1, 2 and 3).
  *
  * In the case of methods whose name does not end with
  * `*_without_replacement`, malformed sequences are automatically replaced
@@ -69,18 +70,18 @@ class Encoding;
  *
  * When decoding to UTF-8, the output buffer must have at least 4 bytes of
  * space. When decoding to UTF-16, the output buffer must have at least two
- * UTF-16 code units (`u16`) of space.
+ * UTF-16 code units (`char16_t`) of space.
  *
  * When decoding to UTF-8 without replacement, the methods are guaranteed
  * not to return indicating that more output space is needed if the length
  * of the output buffer is at least the length returned by
- * [`max_utf8_buffer_length_without_replacement()`][2]. When decoding to UTF-8
+ * `max_utf8_buffer_length_without_replacement()`. When decoding to UTF-8
  * with replacement, the length of the output buffer that guarantees the
  * methods not to return indicating that more output space is needed is given
- * by [`max_utf8_buffer_length()`][3]. When decoding to UTF-16 with
+ * by `max_utf8_buffer_length()`. When decoding to UTF-16 with
  * or without replacement, the length of the output buffer that guarantees
  * the methods not to return indicating that more output space is needed is
- * given by [`max_utf16_buffer_length()`][4].
+ * given by `max_utf16_buffer_length()`.
  *
  * The output written into `dst` is guaranteed to be valid UTF-8 or UTF-16,
  * and the output after each `decode_*` call is guaranteed to consist of
@@ -94,24 +95,19 @@ class Encoding;
  *
  * During the processing of a single stream, the caller must call `decode_*`
  * zero or more times with `last` set to `false` and then call `decode_*` at
- * least once with `last` set to `true`. If `decode_*` returns `InputEmpty`,
+ * least once with `last` set to `true`. If `decode_*` returns `INPUT_EMPTY`,
  * the processing of the stream has ended. Otherwise, the caller must call
- * `decode_*` again with `last` set to `true` (or treat a `Malformed` result as
- *  a fatal error).
+ * `decode_*` again with `last` set to `true` (or treat a malformed result,
+ * i.e. neither `INPUT_EMPTY` nor `OUTPUT_FULL`, as a fatal error).
  *
  * Once the stream has ended, the `Decoder` object must not be used anymore.
  * That is, you need to create another one to process another stream.
  *
- * When the decoder returns `OutputFull` or the decoder returns `Malformed` and
- * the caller does not wish to treat it as a fatal error, the input buffer
- * `src` may not have been completely consumed. In that case, the caller must
- * pass the unconsumed contents of `src` to `decode_*` again upon the next
+ * When the decoder returns `OUTPUT_FULL` or the decoder returns a malformed
+ * result and the caller does not wish to treat it as a fatal error, the input
+ * buffer `src` may not have been completely consumed. In that case, the caller
+ * must pass the unconsumed contents of `src` to `decode_*` again upon the next
  * call.
- *
- * [1]: enum.DecoderResult.html
- * [2]: #method.max_utf8_buffer_length_without_replacement
- * [3]: #method.max_utf8_buffer_length
- * [4]: #method.max_utf16_buffer_length
  *
  * # Infinite loops
  *
@@ -137,7 +133,7 @@ public:
   /**
    * Query the worst-case UTF-8 output size _with replacement_.
    *
-   * Returns the size of the output buffer in UTF-8 code units (`u8`)
+   * Returns the size of the output buffer in UTF-8 code units (`uint8_t`)
    * that will not overflow given the current state of the decoder and
    * `byte_length` number of additional input bytes when decoding with
    * errors handled by outputting a REPLACEMENT CHARACTER for each malformed
@@ -151,7 +147,7 @@ public:
   /**
    * Query the worst-case UTF-8 output size _without replacement_.
    *
-   * Returns the size of the output buffer in UTF-8 code units (`u8`)
+   * Returns the size of the output buffer in UTF-8 code units (`uint8_t`)
    * that will not overflow given the current state of the decoder and
    * `byte_length` number of additional input bytes when decoding without
    * replacement error handling.
@@ -168,7 +164,7 @@ public:
    * Incrementally decode a byte stream into UTF-8 with malformed sequences
    * replaced with the REPLACEMENT CHARACTER.
    *
-   * See the documentation of the struct for documentation for `decode_*`
+   * See the documentation of the class for documentation for `decode_*`
    * methods collectively.
    */
   inline std::tuple<uint32_t, size_t, size_t, bool>
@@ -203,7 +199,7 @@ public:
   /**
    * Query the worst-case UTF-16 output size (with or without replacement).
    *
-   * Returns the size of the output buffer in UTF-16 code units (`u16`)
+   * Returns the size of the output buffer in UTF-16 code units (`char16_t`)
    * that will not overflow given the current state of the decoder and
    * `byte_length` number of additional input bytes.
    *
@@ -220,7 +216,7 @@ public:
    * Incrementally decode a byte stream into UTF-16 with malformed sequences
    * replaced with the REPLACEMENT CHARACTER.
    *
-   * See the documentation of the struct for documentation for `decode_*`
+   * See the documentation of the class for documentation for `decode_*`
    * methods collectively.
    */
   inline std::tuple<uint32_t, size_t, size_t, bool>
@@ -277,10 +273,9 @@ private:
  * 3. All the input characters have been processed.
  *
  * The `encode_*` method then returns tuple of a status indicating which one
- * of the three reasons to return happened, how many input code units (`u8`
- * when encoding from UTF-8 and `u16` when encoding from UTF-16) were read,
- * how many output bytes were written (except when encoding into `Vec<u8>`,
- * whose length change indicates this), and in the case of the variants that
+ * of the three reasons to return happened, how many input code units (`uint8_t`
+ * when encoding from UTF-8 and `char16_t` when encoding from UTF-16) were read,
+ * how many output bytes were written, and in the case of the variants that
  * perform replacement, a boolean indicating whether an unmappable
  * character was replaced with a numeric character reference during the call.
  *
@@ -288,9 +283,9 @@ private:
  * written in the output buffer beyond the point logically written to.
  *
  * In the case of the methods whose name ends with
- * `*_without_replacement`, the status is an [`EncoderResult`][1] enumeration
- * (possibilities `Unmappable`, `OutputFull` and `InputEmpty` corresponding to
- * the three cases listed above).
+ * `*_without_replacement`, the status is a `uint32_t` whose possible values
+ * are an unmappable code point, `OUTPUT_FULL` and `INPUT_EMPTY` corresponding
+ * to the three cases listed above).
  *
  * In the case of methods whose name does not end with
  * `*_without_replacement`, unmappable characters are automatically replaced
@@ -300,30 +295,29 @@ private:
  * When encoding from UTF-8 without replacement, the methods are guaranteed
  * not to return indicating that more output space is needed if the length
  * of the output buffer is at least the length returned by
- * [`max_buffer_length_from_utf8_without_replacement()`][2]. When encoding from
+ * `max_buffer_length_from_utf8_without_replacement()`. When encoding from
  * UTF-8 with replacement, the length of the output buffer that guarantees the
  * methods not to return indicating that more output space is needed in the
  * absence of unmappable characters is given by
- * [`max_buffer_length_from_utf8_if_no_unmappables()`][3]. When encoding from
+ * `max_buffer_length_from_utf8_if_no_unmappables()`. When encoding from
  * UTF-16 without replacement, the methods are guaranteed not to return
  * indicating that more output space is needed if the length of the output
  * buffer is at least the length returned by
- * [`max_buffer_length_from_utf16_without_replacement()`][4]. When encoding
+ * `max_buffer_length_from_utf16_without_replacement()`. When encoding
  * from UTF-16 with replacement, the the length of the output buffer that
  * guarantees the methods not to return indicating that more output space is
  * needed in the absence of unmappable characters is given by
- * [`max_buffer_length_from_utf16_if_no_unmappables()`][5].
+ * `max_buffer_length_from_utf16_if_no_unmappables()`.
  * When encoding with replacement, applications are not expected to size the
  * buffer for the worst case ahead of time but to resize the buffer if there
  * are unmappable characters. This is why max length queries are only available
  * for the case where there are no unmappable characters.
  *
- * When encoding from UTF-8, each `src` buffer _must_ be valid UTF-8. (When
- * calling from Rust, the type system takes care of this.) When encoding from
- * UTF-16, unpaired surrogates in the input are treated as U+FFFD REPLACEMENT
- * CHARACTERS. Therefore, in order for astral characters not to turn into a
- * pair of REPLACEMENT CHARACTERS, the caller must ensure that surrogate pairs
- * are not split across input buffer boundaries.
+ * When encoding from UTF-8, each `src` buffer _must_ be valid UTF-8. When
+ * encoding from UTF-16, unpaired surrogates in the input are treated as U+FFFD
+ * REPLACEMENT CHARACTERS. Therefore, in order for astral characters not to
+ * turn into a pair of REPLACEMENT CHARACTERS, the caller must ensure that
+ * surrogate pairs are not split across input buffer boundaries.
  *
  * After an `encode_*` call returns, the output produced so far, taken as a
  * whole from the start of the stream, is guaranteed to consist of a valid
@@ -341,25 +335,19 @@ private:
  *
  * During the processing of a single stream, the caller must call `encode_*`
  * zero or more times with `last` set to `false` and then call `encode_*` at
- * least once with `last` set to `true`. If `encode_*` returns `InputEmpty`,
+ * least once with `last` set to `true`. If `encode_*` returns `INPUT_EMPTY`,
  * the processing of the stream has ended. Otherwise, the caller must call
- * `encode_*` again with `last` set to `true` (or treat an `Unmappable` result
- * as a fatal error).
+ * `encode_*` again with `last` set to `true` (or treat an unmappable result,
+ * i.e. neither `INPUT_EMPTY` nor `OUTPUT_FULL`, as a fatal error).
  *
  * Once the stream has ended, the `Encoder` object must not be used anymore.
  * That is, you need to create another one to process another stream.
  *
- * When the encoder returns `OutputFull` or the encoder returns `Unmappable`
- * and the caller does not wish to treat it as a fatal error, the input buffer
- * `src` may not have been completely consumed. In that case, the caller must
- * pass the unconsumed contents of `src` to `encode_*` again upon the next
+ * When the encoder returns `OUTPUT_FULL` or the encoder returns an unmappable
+ * result and the caller does not wish to treat it as a fatal error, the input
+ * buffer `src` may not have been completely consumed. In that case, the caller
+ * must pass the unconsumed contents of `src` to `encode_*` again upon the next
  * call.
- *
- * [1]: enum.EncoderResult.html
- * [2]: #method.max_buffer_length_from_utf8_without_replacement
- * [3]: #method.max_buffer_length_from_utf8_if_no_unmappables
- * [4]: #method.max_buffer_length_from_utf16_without_replacement
- * [5]: #method.max_buffer_length_from_utf16_if_no_unmappables
  *
  * # Infinite loops
  *
@@ -413,7 +401,7 @@ public:
    * Incrementally encode into byte stream from UTF-8 with unmappable
    * characters replaced with HTML (decimal) numeric character references.
    *
-   * See the documentation of the struct for documentation for `encode_*`
+   * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
   inline std::tuple<uint32_t, size_t, size_t, bool>
@@ -432,7 +420,7 @@ public:
   /**
    * Incrementally encode into byte stream from UTF-8 _without replacement_.
    *
-   * See the documentation of the struct for documentation for `encode_*`
+   * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
   inline std::tuple<uint32_t, size_t, size_t> encode_from_utf8_without_replacement(
@@ -478,7 +466,7 @@ public:
    * Incrementally encode into byte stream from UTF-16 with unmappable
    * characters replaced with HTML (decimal) numeric character references.
    *
-   * See the documentation of the struct for documentation for `encode_*`
+   * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
   inline std::tuple<uint32_t, size_t, size_t, bool>
@@ -497,7 +485,7 @@ public:
   /**
    * Incrementally encode into byte stream from UTF-16 _without replacement_.
    *
-   * See the documentation of the struct for documentation for `encode_*`
+   * See the documentation of the class for documentation for `encode_*`
    * methods collectively.
    */
   inline std::tuple<uint32_t, size_t, size_t> encode_from_utf16_without_replacement(
@@ -515,16 +503,17 @@ private:
 };
 
 /**
- * An encoding as defined in the [Encoding Standard][1].
+ * An encoding as defined in the Encoding Standard
+ * (https://encoding.spec.whatwg.org/).
  *
- * An _encoding_ defines a mapping from a `uint8_t` sequence to a `char32_t`
+ * An _encoding_ defines a mapping from a byte sequence to a Unicode code point
  * sequence and, in most cases, vice versa. Each encoding has a name, an output
  * encoding, and one or more labels.
  *
  * _Labels_ are ASCII-case-insensitive strings that are used to identify an
  * encoding in formats and protocols. The _name_ of the encoding is the
  * preferred label in the case appropriate for returning from the
- * [`characterSet`][2] property of the `Document` DOM interface, except for
+ * `characterSet` property of the `Document` DOM interface, except for
  * the replacement encoding whose name is not one of its labels.
  *
  * The _output encoding_ is the encoding used for form submission and URL
@@ -532,71 +521,47 @@ private:
  * UTF-16LE and UTF-16BE encodings and the encoding itself for other
  * encodings.
  *
- * [1]: https://encoding.spec.whatwg.org/
- * [2]: https://dom.spec.whatwg.org/#dom-document-characterset
- *
  * # Streaming vs. Non-Streaming
  *
  * When you have the entire input in a single buffer, you can use the
- * convenience methods [`decode()`][1], [`decode_with_bom_removal()`][2],
- * [`decode_without_bom_handling()`][3],
- * [`decode_without_bom_handling_and_without_replacement()`][4] and
- * [`encode()`][5]. (These methods are available to Rust callers only and are
- * not available in the C API.) Unlike the rest of the API available to Rust,
- * these methods perform heap allocations. You should the `Decoder` and
- * `Encoder` objects when your input is split into multiple buffers or when
- * you want to control the allocation of the output buffers.
- *
- * [1]: #method.decode
- * [2]: #method.decode_with_bom_removal
- * [3]: #method.decode_without_bom_handling
- * [4]: #method.decode_without_bom_handling_and_without_replacement
- * [5]: #method.encode
+ * methods `decode()`, `decode_with_bom_removal()`,
+ * `decode_without_bom_handling()`,
+ * `decode_without_bom_handling_and_without_replacement()` and
+ * `encode()`. Unlike the rest of the API, these methods perform heap
+ * allocations. You should the `Decoder` and `Encoder` objects when your input
+ * is split into multiple buffers or when you want to control the allocation of
+ * the output buffers.
  *
  * # Instances
  *
- * All instances of `Encoding` are statically allocated and have the `'static`
+ * All instances of `Encoding` are statically allocated and have the process's
  * lifetime. There is precisely one unique `Encoding` instance for each
  * encoding defined in the Encoding Standard.
  *
  * To obtain a reference to a particular encoding whose identity you know at
- * compile time, use a `static` that refers to enccoding. There is a `static`
+ * compile time, use a `static` that refers to encoding. There is a `static`
  * for each encoding. The `static`s are named in all caps with hyphens
- * replaced with underscores (and in C/C++ have `_ENCODING` appended to the
- * name). For example, if you know at compile time that you will want to
- * decode using the UTF-8 encoding, use the `UTF_8` `static` (`UTF_8_ENCODING`
- * in C/C++).
- *
- * Additionally, there are non-reference-typed forms ending with `_INIT` to
- * work around the problem that `static`s of the type `&'static Encoding`
- * cannot be used to initialize items of an array whose type is
- * `[&'static Encoding; N]`.
+ * replaced with underscores and with `_ENCODING` appended to the
+ * name. For example, if you know at compile time that you will want to
+ * decode using the UTF-8 encoding, use the `UTF_8_ENCODING` `static`.
  *
  * If you don't know what encoding you need at compile time and need to
- * dynamically get an encoding by label, use
- * <code>Encoding::<a href="#method.for_label">for_label</a>(<var>label</var>)</code>.
+ * dynamically get an encoding by label, use `Encoding::for_label()`.
  *
- * Instances of `Encoding` can be compared with `==` (in both Rust and in
- * C/C++).
+ * Instances of `Encoding` can be compared with `==`.
  */
 class Encoding final
 {
 public:
 
   /**
-   * Implements the
-   * [_get an encoding_](https://encoding.spec.whatwg.org/#concept-encoding-get)
-   * algorithm.
+   * Implements the _get an encoding_ algorithm
+   * (https://encoding.spec.whatwg.org/#concept-encoding-get).
    *
    * If, after ASCII-lowercasing and removing leading and trailing
    * whitespace, the argument matches a label defined in the Encoding
-   * Standard, `Some(&'static Encoding)` representing the corresponding
-   * encoding is returned. If there is no match, `None` is returned.
-   *
-   * The argument is of type `&[u8]` instead of `&str` to save callers
-   * that are extracting the label from a non-UTF-8 protocol the trouble
-   * of conversion to UTF-8. (If you have a `&str`, just call `.gsl::as_bytes()`
-   * on it.)
+   * Standard, `const Encoding*` representing the corresponding
+   * encoding is returned. If there is no match, `nullptr` is returned.
    */
   static inline const Encoding* for_label(gsl::cstring_span<> label)
   {
@@ -606,7 +571,7 @@ public:
 
   /**
    * This method behaves the same as `for_label()`, except when `for_label()`
-   * would return `Some(REPLACEMENT)`, this method returns `None` instead.
+   * would return `REPLACEMENT_ENCODING`, this method returns `nullptr` instead.
    *
    * This method is useful in scenarios where a fatal error is required
    * upon invalid label, because in those cases the caller typically wishes
@@ -626,9 +591,9 @@ public:
    * stream (non-streaming case) or a buffer representing at least the first
    * three bytes of the input stream (streaming case).
    *
-   * Returns `Some((UTF_8, 3))`, `Some((UTF_16LE, 2))` or
-   * `Some((UTF_16BE, 3))` if the argument starts with the UTF-8, UTF-16LE
-   * or UTF-16BE BOM or `None` otherwise.
+   * Returns `make_tuple(UTF_8_ENCODING, 3)`, `make_tuple(UTF_16LE_ENCODING, 2)`
+   * or `make_tuple(UTF_16BE_ENCODING, 3)` if the argument starts with the
+   * UTF-8, UTF-16LE or UTF-16BE BOM or `make_tuple(nullptr, 0)` otherwise.
    */
   static inline std::tuple<const Encoding*, size_t> for_bom(gsl::span<const uint8_t> buffer)
   {
@@ -640,7 +605,7 @@ public:
   /**
    * If the argument matches exactly (case-sensitively; no whitespace
    * removal performed) the name of an encoding, returns
-   * `&'static Encoding` representing that encoding. Otherwise panics.
+   * `const Encoding*` representing that encoding. Otherwise panics.
    *
    * The motivating use case for this method is interoperability with
    * legacy Gecko code that represents encodings as name string instead of
@@ -674,7 +639,7 @@ public:
 
   /**
    * Checks whether the _output encoding_ of this encoding can encode every
-   * `char`. (Only true if the output encoding is UTF-8.)
+   * Unicode code point. (Only true if the output encoding is UTF-8.)
    */
   inline bool can_encode_everything() const
   {
@@ -706,7 +671,7 @@ public:
    * buffer marks the end of the stream).
    *
    * This method implements the (non-streaming version of) the
-   * [_decode_](https://encoding.spec.whatwg.org/#decode) spec concept.
+   * _decode_ (https://encoding.spec.whatwg.org/#decode) spec concept.
    *
    * The second item in the returned tuple is the encoding that was actually
    * used (which may differ from this encoding thanks to BOM sniffing).
@@ -740,9 +705,8 @@ public:
    * buffer marks the end of the stream).
    *
    * When invoked on `UTF_8`, this method implements the (non-streaming
-   * version of) the
-   * [_UTF-8 decode_](https://encoding.spec.whatwg.org/#utf-8-decode) spec
-   * concept.
+   * version of) the _UTF-8 decode_
+   * (https://encoding.spec.whatwg.org/#utf-8-decode) spec concept.
    *
    * The second item in the returned pair indicates whether there were
    * malformed sequences (that were replaced with the REPLACEMENT CHARACTER).
@@ -769,9 +733,8 @@ public:
    * buffer marks the end of the stream).
    *
    * When invoked on `UTF_8`, this method implements the (non-streaming
-   * version of) the
-   * [_UTF-8 decode without BOM_](https://encoding.spec.whatwg.org/#utf-8-decode-without-bom)
-   * spec concept.
+   * version of) the _UTF-8 decode without BOM_
+   * (https://encoding.spec.whatwg.org/#utf-8-decode-without-bom) spec concept.
    *
    * The second item in the returned pair indicates whether there were
    * malformed sequences (that were replaced with the REPLACEMENT CHARACTER).
@@ -802,8 +765,8 @@ public:
    * of the stream).
    *
    * When invoked on `UTF_8`, this method implements the (non-streaming
-   * version of) the
-   * [_UTF-8 decode without BOM or fail_](https://encoding.spec.whatwg.org/#utf-8-decode-without-bom-or-fail)
+   * version of) the _UTF-8 decode without BOM or fail_
+   * (https://encoding.spec.whatwg.org/#utf-8-decode-without-bom-or-fail)
    * spec concept.
    *
    * Returns `None` if a malformed sequence was encountered and the result
@@ -836,11 +799,7 @@ public:
    * end of the stream).
    *
    * This method implements the (non-streaming version of) the
-   * [_encode_](https://encoding.spec.whatwg.org/#encode) spec concept. For
-   * the [_UTF-8 encode_](https://encoding.spec.whatwg.org/#utf-8-encode)
-   * spec concept, it is slightly more efficient to use
-   * <code><var>string</var>.gsl::as_bytes()</code> instead of invoking this
-   * method on `UTF_8`.
+   * _encode_ (https://encoding.spec.whatwg.org/#encode) spec concept.
    *
    * The second item in the returned tuple is the encoding that was actually
    * used (which may differ from this encoding thanks to some encodings
@@ -995,7 +954,7 @@ public:
    * Validates UTF-8.
    *
    * Returns the index of the first byte that makes the input malformed as
-   * UTF-8 or the length of the slice if the slice is entirely valid.
+   * UTF-8 or the length of the input if the input is entirely valid.
    */
   static inline size_t utf8_valid_up_to(gsl::span<const uint8_t> buffer)
   {
@@ -1006,7 +965,7 @@ public:
    * Validates ASCII.
    *
    * Returns the index of the first byte that makes the input malformed as
-   * ASCII or the length of the slice if the slice is entirely valid.
+   * ASCII or the length of the input if the input is entirely valid.
    */
   static inline size_t ascii_valid_up_to(gsl::span<const uint8_t> buffer)
   {
@@ -1018,7 +977,7 @@ public:
    *
    * Returns the index of the first byte that makes the input not
    * representable in the ASCII state of ISO-2022-JP or the length of the
-   * slice if the slice is entirely representable in the ASCII state of
+   * input if the input is entirely representable in the ASCII state of
    * ISO-2022-JP.
    */
   static inline size_t iso_2022_jp_ascii_valid_up_to(gsl::span<const uint8_t> buffer)
