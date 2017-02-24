@@ -135,19 +135,17 @@ public:
   inline gsl::not_null<const Encoding*> encoding() const { return decoder_encoding(this); }
 
   /**
-   * Query the worst-case UTF-16 output size (with or without replacement).
+   * Query the worst-case UTF-8 output size _with replacement_.
    *
-   * Returns the size of the output buffer in UTF-16 code units (`u16`)
+   * Returns the size of the output buffer in UTF-8 code units (`u8`)
    * that will not overflow given the current state of the decoder and
-   * `byte_length` number of additional input bytes.
-   *
-   * Since the REPLACEMENT CHARACTER fits into one UTF-16 code unit, the
-   * return value of this method applies also in the
-   * `_without_replacement` case.
+   * `byte_length` number of additional input bytes when decoding with
+   * errors handled by outputting a REPLACEMENT CHARACTER for each malformed
+   * sequence.
    */
-  inline size_t max_utf16_buffer_length(size_t u16_length) const
+  inline size_t max_utf8_buffer_length(size_t byte_length) const
   {
-    return decoder_max_utf16_buffer_length(this, u16_length);
+    return decoder_max_utf8_buffer_length(this, byte_length);
   }
 
   /**
@@ -167,33 +165,23 @@ public:
   }
 
   /**
-   * Query the worst-case UTF-8 output size _with replacement_.
+   * Incrementally decode a byte stream into UTF-8 with malformed sequences
+   * replaced with the REPLACEMENT CHARACTER.
    *
-   * Returns the size of the output buffer in UTF-8 code units (`u8`)
-   * that will not overflow given the current state of the decoder and
-   * `byte_length` number of additional input bytes when decoding with
-   * errors handled by outputting a REPLACEMENT CHARACTER for each malformed
-   * sequence.
-   */
-  inline size_t max_utf8_buffer_length(size_t byte_length) const
-  {
-    return decoder_max_utf8_buffer_length(this, byte_length);
-  }
-
-  /**
-   * Incrementally decode a byte stream into UTF-16 _without replacement_.
-   *
-   * See the documentation of the class for documentation for `decode_*`
+   * See the documentation of the struct for documentation for `decode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t> decode_to_utf16_without_replacement(
-    gsl::span<const uint8_t> src, gsl::span<char16_t> dst, bool last)
+  inline std::tuple<uint32_t, size_t, size_t, bool>
+  decode_to_utf8(gsl::span<const uint8_t> src, gsl::span<uint8_t> dst,
+                                  bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
-    uint32_t result = decoder_decode_to_utf16_without_replacement(this, src.data(), &src_read,
-                                              dst.data(), &dst_written, last);
-    return std::make_tuple(result, src_read, dst_written);
+    bool had_replacements;
+    uint32_t result = decoder_decode_to_utf8(
+      this, src.data(), &src_read, dst.data(), &dst_written, last,
+      &had_replacements);
+    return std::make_tuple(result, src_read, dst_written, had_replacements);
   }
 
   /**
@@ -210,6 +198,22 @@ public:
     uint32_t result = decoder_decode_to_utf8_without_replacement(this, src.data(), &src_read,
                                              dst.data(), &dst_written, last);
     return std::make_tuple(result, src_read, dst_written);
+  }
+
+  /**
+   * Query the worst-case UTF-16 output size (with or without replacement).
+   *
+   * Returns the size of the output buffer in UTF-16 code units (`u16`)
+   * that will not overflow given the current state of the decoder and
+   * `byte_length` number of additional input bytes.
+   *
+   * Since the REPLACEMENT CHARACTER fits into one UTF-16 code unit, the
+   * return value of this method applies also in the
+   * `_without_replacement` case.
+   */
+  inline size_t max_utf16_buffer_length(size_t u16_length) const
+  {
+    return decoder_max_utf16_buffer_length(this, u16_length);
   }
 
   /**
@@ -233,23 +237,19 @@ public:
   }
 
   /**
-   * Incrementally decode a byte stream into UTF-8 with malformed sequences
-   * replaced with the REPLACEMENT CHARACTER.
+   * Incrementally decode a byte stream into UTF-16 _without replacement_.
    *
-   * See the documentation of the struct for documentation for `decode_*`
+   * See the documentation of the class for documentation for `decode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t, bool>
-  decode_to_utf8(gsl::span<const uint8_t> src, gsl::span<uint8_t> dst,
-                                  bool last)
+  inline std::tuple<uint32_t, size_t, size_t> decode_to_utf16_without_replacement(
+    gsl::span<const uint8_t> src, gsl::span<char16_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
-    bool had_replacements;
-    uint32_t result = decoder_decode_to_utf8(
-      this, src.data(), &src_read, dst.data(), &dst_written, last,
-      &had_replacements);
-    return std::make_tuple(result, src_read, dst_written, had_replacements);
+    uint32_t result = decoder_decode_to_utf16_without_replacement(this, src.data(), &src_read,
+                                              dst.data(), &dst_written, last);
+    return std::make_tuple(result, src_read, dst_written);
   }
 
 private:
@@ -381,16 +381,19 @@ public:
   inline gsl::not_null<const Encoding*> encoding() const { return encoder_encoding(this); }
 
   /**
-   * Query the worst-case output size when encoding from UTF-16 without
+   * Query the worst-case output size when encoding from UTF-8 with
    * replacement.
    *
    * Returns the size of the output buffer in bytes that will not overflow
-   * given the current state of the encoder and `u16_length` number of
-   * additional input code units.
+   * given the current state of the encoder and `byte_length` number of
+   * additional input code units if there are no unmappable characters in
+   * the input.
    */
-  inline size_t max_buffer_length_from_utf16_without_replacement(size_t u16_length) const
+  inline size_t max_buffer_length_from_utf8_if_no_unmappables(
+    size_t byte_length) const
   {
-    return encoder_max_buffer_length_from_utf16_without_replacement(this, u16_length);
+    return encoder_max_buffer_length_from_utf8_if_no_unmappables(
+      this, byte_length);
   }
 
   /**
@@ -404,6 +407,42 @@ public:
   inline size_t max_buffer_length_from_utf8_without_replacement(size_t byte_length) const
   {
     return encoder_max_buffer_length_from_utf8_without_replacement(this, byte_length);
+  }
+
+  /**
+   * Incrementally encode into byte stream from UTF-8 with unmappable
+   * characters replaced with HTML (decimal) numeric character references.
+   *
+   * See the documentation of the struct for documentation for `encode_*`
+   * methods collectively.
+   */
+  inline std::tuple<uint32_t, size_t, size_t, bool>
+  encode_from_utf8(gsl::span<const uint8_t> src, gsl::span<uint8_t> dst,
+                                    bool last)
+  {
+    size_t src_read = src.size();
+    size_t dst_written = dst.size();
+    bool had_replacements;
+    uint32_t result = encoder_encode_from_utf8(
+      this, src.data(), &src_read, dst.data(), &dst_written, last,
+      &had_replacements);
+    return std::make_tuple(result, src_read, dst_written, had_replacements);
+  }
+
+  /**
+   * Incrementally encode into byte stream from UTF-8 _without replacement_.
+   *
+   * See the documentation of the struct for documentation for `encode_*`
+   * methods collectively.
+   */
+  inline std::tuple<uint32_t, size_t, size_t> encode_from_utf8_without_replacement(
+    gsl::span<const uint8_t> src, gsl::span<uint8_t> dst, bool last)
+  {
+    size_t src_read = src.size();
+    size_t dst_written = dst.size();
+    uint32_t result = encoder_encode_from_utf8_without_replacement(this, src.data(), &src_read,
+                                               dst.data(), &dst_written, last);
+    return std::make_tuple(result, src_read, dst_written);
   }
 
   /**
@@ -423,51 +462,16 @@ public:
   }
 
   /**
-   * Query the worst-case output size when encoding from UTF-8 with
+   * Query the worst-case output size when encoding from UTF-16 without
    * replacement.
    *
    * Returns the size of the output buffer in bytes that will not overflow
-   * given the current state of the encoder and `byte_length` number of
-   * additional input code units if there are no unmappable characters in
-   * the input.
+   * given the current state of the encoder and `u16_length` number of
+   * additional input code units.
    */
-  inline size_t max_buffer_length_from_utf8_if_no_unmappables(
-    size_t byte_length) const
+  inline size_t max_buffer_length_from_utf16_without_replacement(size_t u16_length) const
   {
-    return encoder_max_buffer_length_from_utf8_if_no_unmappables(
-      this, byte_length);
-  }
-
-  /**
-   * Incrementally encode into byte stream from UTF-16 _without replacement_.
-   *
-   * See the documentation of the struct for documentation for `encode_*`
-   * methods collectively.
-   */
-  inline std::tuple<uint32_t, size_t, size_t> encode_from_utf16_without_replacement(
-    gsl::span<const char16_t> src, gsl::span<uint8_t> dst, bool last)
-  {
-    size_t src_read = src.size();
-    size_t dst_written = dst.size();
-    uint32_t result = encoder_encode_from_utf16_without_replacement(this, src.data(), &src_read,
-                                                dst.data(), &dst_written, last);
-    return std::make_tuple(result, src_read, dst_written);
-  }
-
-  /**
-   * Incrementally encode into byte stream from UTF-8 _without replacement_.
-   *
-   * See the documentation of the struct for documentation for `encode_*`
-   * methods collectively.
-   */
-  inline std::tuple<uint32_t, size_t, size_t> encode_from_utf8_without_replacement(
-    gsl::span<const uint8_t> src, gsl::span<uint8_t> dst, bool last)
-  {
-    size_t src_read = src.size();
-    size_t dst_written = dst.size();
-    uint32_t result = encoder_encode_from_utf8_without_replacement(this, src.data(), &src_read,
-                                               dst.data(), &dst_written, last);
-    return std::make_tuple(result, src_read, dst_written);
+    return encoder_max_buffer_length_from_utf16_without_replacement(this, u16_length);
   }
 
   /**
@@ -491,23 +495,19 @@ public:
   }
 
   /**
-   * Incrementally encode into byte stream from UTF-8 with unmappable
-   * characters replaced with HTML (decimal) numeric character references.
+   * Incrementally encode into byte stream from UTF-16 _without replacement_.
    *
    * See the documentation of the struct for documentation for `encode_*`
    * methods collectively.
    */
-  inline std::tuple<uint32_t, size_t, size_t, bool>
-  encode_from_utf8(gsl::span<const uint8_t> src, gsl::span<uint8_t> dst,
-                                    bool last)
+  inline std::tuple<uint32_t, size_t, size_t> encode_from_utf16_without_replacement(
+    gsl::span<const char16_t> src, gsl::span<uint8_t> dst, bool last)
   {
     size_t src_read = src.size();
     size_t dst_written = dst.size();
-    bool had_replacements;
-    uint32_t result = encoder_encode_from_utf8(
-      this, src.data(), &src_read, dst.data(), &dst_written, last,
-      &had_replacements);
-    return std::make_tuple(result, src_read, dst_written, had_replacements);
+    uint32_t result = encoder_encode_from_utf16_without_replacement(this, src.data(), &src_read,
+                                                dst.data(), &dst_written, last);
+    return std::make_tuple(result, src_read, dst_written);
   }
 
 private:
@@ -620,6 +620,24 @@ public:
   }
 
   /**
+   * Performs non-incremental BOM sniffing.
+   *
+   * The argument must either be a buffer representing the entire input
+   * stream (non-streaming case) or a buffer representing at least the first
+   * three bytes of the input stream (streaming case).
+   *
+   * Returns `Some((UTF_8, 3))`, `Some((UTF_16LE, 2))` or
+   * `Some((UTF_16BE, 3))` if the argument starts with the UTF-8, UTF-16LE
+   * or UTF-16BE BOM or `None` otherwise.
+   */
+  static inline std::tuple<const Encoding*, size_t> for_bom(gsl::span<const uint8_t> buffer)
+  {
+    size_t len = buffer.size();
+    const Encoding* encoding = encoding_for_bom(buffer.data(), &len);
+    return std::make_tuple(encoding, len);
+  }
+
+  /**
    * If the argument matches exactly (case-sensitively; no whitespace
    * removal performed) the name of an encoding, returns
    * `&'static Encoding` representing that encoding. Otherwise panics.
@@ -637,24 +655,6 @@ public:
   {
     return encoding_for_name(reinterpret_cast<const uint8_t*>(name.data()),
                              name.length());
-  }
-
-  /**
-   * Performs non-incremental BOM sniffing.
-   *
-   * The argument must either be a buffer representing the entire input
-   * stream (non-streaming case) or a buffer representing at least the first
-   * three bytes of the input stream (streaming case).
-   *
-   * Returns `Some((UTF_8, 3))`, `Some((UTF_16LE, 2))` or
-   * `Some((UTF_16BE, 3))` if the argument starts with the UTF-8, UTF-16LE
-   * or UTF-16BE BOM or `None` otherwise.
-   */
-  static inline std::tuple<const Encoding*, size_t> for_bom(gsl::span<const uint8_t> buffer)
-  {
-    size_t len = buffer.size();
-    const Encoding* encoding = encoding_for_bom(buffer.data(), &len);
-    return std::make_tuple(encoding, len);
   }
 
   /**
