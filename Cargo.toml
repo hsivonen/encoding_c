@@ -8,7 +8,7 @@ readme = "README.md"
 documentation = "https://docs.rs/encoding_c/"
 homepage = "https://docs.rs/encoding_c/"
 repository = "https://github.com/hsivonen/encoding_c"
-keywords = ["ffi", "capi", "encoding", "web", "unicode", "charset"]
+keywords = ["ffi", "capi", "encoding", "unicode", "charset"]
 build = "build.rs"
 
 [features]
