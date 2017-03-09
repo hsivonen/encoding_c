@@ -1199,9 +1199,9 @@ public:
    * Instantiates a new encoder for the output encoding of this encoding
    * into memory occupied by a previously-instantiated encoder.
    */
-  inline void new_encoder_into(Encoder* encoder) const
+  inline void new_encoder_into(Encoder& encoder) const
   {
-    encoding_new_encoder_into(this, encoder);
+    encoding_new_encoder_into(this, &encoder);
   }
 
   /**
