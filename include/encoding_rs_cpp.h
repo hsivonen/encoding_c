@@ -143,7 +143,7 @@ public:
    * that will not overflow given the current state of the decoder and
    * `byte_length` number of additional input bytes when decoding with
    * errors handled by outputting a REPLACEMENT CHARACTER for each malformed
-   * sequence.
+   * sequence or `SIZE_MAX` if `size_t` would overflow.
    */
   inline size_t max_utf8_buffer_length(size_t byte_length) const
   {
@@ -156,7 +156,7 @@ public:
    * Returns the size of the output buffer in UTF-8 code units (`uint8_t`)
    * that will not overflow given the current state of the decoder and
    * `byte_length` number of additional input bytes when decoding without
-   * replacement error handling.
+   * replacement error handling or `SIZE_MAX` if `size_t` would overflow.
    *
    * Note that this value may be too small for the `_with_replacement` case.
    * Use `max_utf8_buffer_length()` for that case.
@@ -209,7 +209,8 @@ public:
    *
    * Returns the size of the output buffer in UTF-16 code units (`char16_t`)
    * that will not overflow given the current state of the decoder and
-   * `byte_length` number of additional input bytes.
+   * `byte_length` number of additional input bytes or `SIZE_MAX` if
+   * `size_t` would overflow.
    *
    * Since the REPLACEMENT CHARACTER fits into one UTF-16 code unit, the
    * return value of this method applies also in the
@@ -389,7 +390,7 @@ public:
    * Returns the size of the output buffer in bytes that will not overflow
    * given the current state of the encoder and `byte_length` number of
    * additional input code units if there are no unmappable characters in
-   * the input.
+   * the input or `SIZE_MAX` if `size_t` would overflow.
    */
   inline size_t max_buffer_length_from_utf8_if_no_unmappables(
     size_t byte_length) const
@@ -404,7 +405,7 @@ public:
    *
    * Returns the size of the output buffer in bytes that will not overflow
    * given the current state of the encoder and `byte_length` number of
-   * additional input code units.
+   * additional input code units or `SIZE_MAX` if `size_t` would overflow.
    */
   inline size_t max_buffer_length_from_utf8_without_replacement(
     size_t byte_length) const
@@ -456,7 +457,7 @@ public:
    * Returns the size of the output buffer in bytes that will not overflow
    * given the current state of the encoder and `u16_length` number of
    * additional input code units if there are no unmappable characters in
-   * the input.
+   * the input or `SIZE_MAX` if `size_t` would overflow.
    */
   inline size_t max_buffer_length_from_utf16_if_no_unmappables(
     size_t u16_length) const
@@ -471,7 +472,7 @@ public:
    *
    * Returns the size of the output buffer in bytes that will not overflow
    * given the current state of the encoder and `u16_length` number of
-   * additional input code units.
+   * additional input code units or `SIZE_MAX` if `size_t` would overflow.
    */
   inline size_t max_buffer_length_from_utf16_without_replacement(
     size_t u16_length) const
@@ -777,7 +778,11 @@ public:
     gsl::span<const uint8_t> bytes) const
   {
     auto decoder = new_decoder_without_bom_handling();
-    std::string string(decoder->max_utf8_buffer_length(bytes.size()), '\0');
+    size_t needed = decoder->max_utf8_buffer_length(bytes.size());
+    if (needed == SIZE_MAX) {
+      throw std::overflow_error("Overflow in buffer size computation.");
+    }
+    std::string string(needed, '\0');
     uint32_t result;
     size_t read;
     size_t written;
@@ -816,8 +821,11 @@ public:
     gsl::span<const uint8_t> bytes) const
   {
     auto decoder = new_decoder_without_bom_handling();
-    std::string string(
-      decoder->max_utf8_buffer_length_without_replacement(bytes.size()), '\0');
+    size_t needed = decoder->max_utf8_buffer_length_without_replacement(bytes.size());
+    if (needed == SIZE_MAX) {
+      throw std::overflow_error("Overflow in buffer size computation.");
+    }
+    std::string string(needed, '\0');
     uint32_t result;
     size_t read;
     size_t written;
@@ -928,7 +936,11 @@ public:
     gsl::span<const uint8_t> bytes) const
   {
     auto decoder = new_decoder_without_bom_handling();
-    std::u16string string(decoder->max_utf16_buffer_length(bytes.size()), '\0');
+    size_t needed = decoder->max_utf16_buffer_length(bytes.size());
+    if (needed == SIZE_MAX) {
+      throw std::overflow_error("Overflow in buffer size computation.");
+    }
+    std::u16string string(needed, '\0');
     uint32_t result;
     size_t read;
     size_t written;
@@ -967,8 +979,11 @@ public:
     gsl::span<const uint8_t> bytes) const
   {
     auto decoder = new_decoder_without_bom_handling();
-    std::u16string string(
-      decoder->max_utf16_buffer_length(bytes.size()), '\0');
+    size_t needed = decoder->max_utf16_buffer_length(bytes.size());
+    if (needed == SIZE_MAX) {
+      throw std::overflow_error("Overflow in buffer size computation.");
+    }
+    std::u16string string(needed, '\0');
     uint32_t result;
     size_t read;
     size_t written;
@@ -1016,8 +1031,11 @@ public:
       std::memcpy(&vec[0], string.data(), string.size());
     }
     auto encoder = output_enc->new_encoder();
-    std::vector<uint8_t> vec(
-      encoder->max_buffer_length_from_utf8_if_no_unmappables(string.size()));
+    size_t needed = encoder->max_buffer_length_from_utf8_if_no_unmappables(string.size());
+    if (needed == SIZE_MAX) {
+      throw std::overflow_error("Overflow in buffer size computation.");
+    }
+    std::vector<uint8_t> vec(needed);
     bool total_had_errors = false;
     size_t total_read = 0;
     size_t total_written = 0;
@@ -1039,6 +1057,9 @@ public:
       }
       auto needed = encoder->max_buffer_length_from_utf8_if_no_unmappables(
         string.size() - total_read);
+      if (needed == SIZE_MAX) {
+        throw std::overflow_error("Overflow in buffer size computation.");
+      }
       vec.resize(total_written + needed);
     }
   }
@@ -1069,8 +1090,11 @@ public:
   {
     auto output_enc = output_encoding();
     auto encoder = output_enc->new_encoder();
-    std::vector<uint8_t> vec(
-      encoder->max_buffer_length_from_utf16_if_no_unmappables(string.size()));
+    size_t needed = encoder->max_buffer_length_from_utf16_if_no_unmappables(string.size());
+    if (needed == SIZE_MAX) {
+      throw std::overflow_error("Overflow in buffer size computation.");
+    }
+    std::vector<uint8_t> vec(needed);
     bool total_had_errors = false;
     size_t total_read = 0;
     size_t total_written = 0;
@@ -1092,6 +1116,9 @@ public:
       }
       auto needed = encoder->max_buffer_length_from_utf16_if_no_unmappables(
         string.size() - total_read);
+      if (needed == SIZE_MAX) {
+        throw std::overflow_error("Overflow in buffer size computation.");
+      }
       vec.resize(total_written + needed);
     }
   }

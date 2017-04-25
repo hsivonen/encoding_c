@@ -638,7 +638,7 @@ pub unsafe extern "C" fn decoder_encoding(decoder: *const Decoder) -> *const Enc
 /// that will not overflow given the current state of the decoder and
 /// `byte_length` number of additional input bytes when decoding with
 /// errors handled by outputting a REPLACEMENT CHARACTER for each malformed
-/// sequence.
+/// sequence or `SIZE_MAX` if `size_t` would overflow.
 ///
 /// # Undefined behavior
 ///
@@ -647,7 +647,7 @@ pub unsafe extern "C" fn decoder_encoding(decoder: *const Decoder) -> *const Enc
 pub unsafe extern "C" fn decoder_max_utf8_buffer_length(decoder: *const Decoder,
                                                         byte_length: usize)
                                                         -> usize {
-    (*decoder).max_utf8_buffer_length(byte_length)
+    (*decoder).max_utf8_buffer_length(byte_length).unwrap_or(::std::usize::MAX)
 }
 
 /// Query the worst-case UTF-8 output size _without replacement_.
@@ -655,7 +655,7 @@ pub unsafe extern "C" fn decoder_max_utf8_buffer_length(decoder: *const Decoder,
 /// Returns the size of the output buffer in UTF-8 code units (`uint8_t`)
 /// that will not overflow given the current state of the decoder and
 /// `byte_length` number of additional input bytes when decoding without
-/// replacement error handling.
+/// replacement error handling or `SIZE_MAX` if `size_t` would overflow.
 ///
 /// Note that this value may be too small for the `_with_replacement` case.
 /// Use `decoder_max_utf8_buffer_length()` for that case.
@@ -667,7 +667,9 @@ pub unsafe extern "C" fn decoder_max_utf8_buffer_length(decoder: *const Decoder,
 pub unsafe extern "C" fn decoder_max_utf8_buffer_length_without_replacement(decoder: *const Decoder,
                                                                             byte_length: usize)
                                                                             -> usize {
-    (*decoder).max_utf8_buffer_length_without_replacement(byte_length)
+    (*decoder)
+        .max_utf8_buffer_length_without_replacement(byte_length)
+        .unwrap_or(::std::usize::MAX)
 }
 
 /// Incrementally decode a byte stream into UTF-8 with malformed sequences
@@ -737,7 +739,8 @@ pub unsafe extern "C" fn decoder_decode_to_utf8_without_replacement(decoder: *mu
 ///
 /// Returns the size of the output buffer in UTF-16 code units (`char16_t`)
 /// that will not overflow given the current state of the decoder and
-/// `byte_length` number of additional input bytes.
+/// `byte_length` number of additional input bytes or `SIZE_MAX` if `size_t`
+/// would overflow.
 ///
 /// Since the REPLACEMENT CHARACTER fits into one UTF-16 code unit, the
 /// return value of this method applies also in the
@@ -750,7 +753,7 @@ pub unsafe extern "C" fn decoder_decode_to_utf8_without_replacement(decoder: *mu
 pub unsafe extern "C" fn decoder_max_utf16_buffer_length(decoder: *const Decoder,
                                                          u16_length: usize)
                                                          -> usize {
-    (*decoder).max_utf16_buffer_length(u16_length)
+    (*decoder).max_utf16_buffer_length(u16_length).unwrap_or(::std::usize::MAX)
 }
 
 /// Incrementally decode a byte stream into UTF-16 with malformed sequences
@@ -842,13 +845,15 @@ pub unsafe extern "C" fn encoder_encoding(encoder: *const Encoder) -> *const Enc
 /// Returns the size of the output buffer in bytes that will not overflow
 /// given the current state of the encoder and `byte_length` number of
 /// additional input code units if there are no unmappable characters in
-/// the input.
+/// the input or `SIZE_MAX` if `size_t` would overflow.
 #[no_mangle]
 pub unsafe extern "C" fn encoder_max_buffer_length_from_utf8_if_no_unmappables
     (encoder: *const Encoder,
      byte_length: usize)
      -> usize {
-    (*encoder).max_buffer_length_from_utf8_if_no_unmappables(byte_length)
+    (*encoder)
+        .max_buffer_length_from_utf8_if_no_unmappables(byte_length)
+        .unwrap_or(::std::usize::MAX)
 }
 
 /// Query the worst-case output size when encoding from UTF-8 without
@@ -856,12 +861,14 @@ pub unsafe extern "C" fn encoder_max_buffer_length_from_utf8_if_no_unmappables
 ///
 /// Returns the size of the output buffer in bytes that will not overflow
 /// given the current state of the encoder and `byte_length` number of
-/// additional input code units.
+/// additional input code units or `SIZE_MAX` if `size_t` would overflow.
 #[no_mangle]
 pub unsafe extern "C" fn encoder_max_buffer_length_from_utf8_without_replacement(encoder: *const Encoder,
                                                              byte_length: usize)
                                                              -> usize {
-    (*encoder).max_buffer_length_from_utf8_without_replacement(byte_length)
+    (*encoder)
+        .max_buffer_length_from_utf8_without_replacement(byte_length)
+        .unwrap_or(::std::usize::MAX)
 }
 
 /// Incrementally encode into byte stream from UTF-8 with unmappable
@@ -939,13 +946,15 @@ pub unsafe extern "C" fn encoder_encode_from_utf8_without_replacement(encoder: *
 /// Returns the size of the output buffer in bytes that will not overflow
 /// given the current state of the encoder and `u16_length` number of
 /// additional input code units if there are no unmappable characters in
-/// the input.
+/// the input or `SIZE_MAX` if `size_t` would overflow.
 #[no_mangle]
 pub unsafe extern "C" fn encoder_max_buffer_length_from_utf16_if_no_unmappables
     (encoder: *const Encoder,
      u16_length: usize)
      -> usize {
-    (*encoder).max_buffer_length_from_utf16_if_no_unmappables(u16_length)
+    (*encoder)
+        .max_buffer_length_from_utf16_if_no_unmappables(u16_length)
+        .unwrap_or(::std::usize::MAX)
 }
 
 /// Query the worst-case output size when encoding from UTF-16 without
@@ -953,12 +962,14 @@ pub unsafe extern "C" fn encoder_max_buffer_length_from_utf16_if_no_unmappables
 ///
 /// Returns the size of the output buffer in bytes that will not overflow
 /// given the current state of the encoder and `u16_length` number of
-/// additional input code units.
+/// additional input code units or `SIZE_MAX` if `size_t` would overflow.
 #[no_mangle]
 pub unsafe extern "C" fn encoder_max_buffer_length_from_utf16_without_replacement(encoder: *const Encoder,
                                                               u16_length: usize)
                                                               -> usize {
-    (*encoder).max_buffer_length_from_utf16_without_replacement(u16_length)
+    (*encoder)
+        .max_buffer_length_from_utf16_without_replacement(u16_length)
+        .unwrap_or(::std::usize::MAX)
 }
 
 /// Incrementally encode into byte stream from UTF-16 with unmappable
