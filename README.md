@@ -23,6 +23,10 @@ adapt the header to their replacements of standard-library types.
 
 ## Release Notes
 
+### 0.7.0
+
+* Map `None` to `SIZE_MAX` in the max length calculation functions.
+
 ### 0.6.0
 
 * Check in the `cheddar`-generated header and comment out the `cheddar`-using
