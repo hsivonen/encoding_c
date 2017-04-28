@@ -278,9 +278,15 @@ fn option_to_ptr(opt: Option<&'static Encoding>) -> *const Encoding {
 /// The argument buffer can be in any ASCII-compatible encoding. It is not
 /// required to be UTF-8.
 ///
+/// `label` must be non-`NULL` even if `label_len` is zero. When `label_len`
+/// is zero, it is OK for `label` to be something non-dereferencable,
+/// such as `0x1`. This is required due to Rust's optimization for slices
+/// within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `label` and `label_len` don't designate a valid memory block.
+/// UB ensues if `label` and `label_len` don't designate a valid memory block
+/// of if `label` is `NULL`.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_for_label(label: *const u8, label_len: usize) -> *const Encoding {
     let label_slice = ::std::slice::from_raw_parts(label, label_len);
@@ -296,9 +302,18 @@ pub unsafe extern "C" fn encoding_for_label(label: *const u8, label_len: usize) 
 /// to treat the labels that map to the replacement encoding as fatal
 /// errors, too.
 ///
+/// The argument buffer can be in any ASCII-compatible encoding. It is not
+/// required to be UTF-8.
+///
+/// `label` must be non-`NULL` even if `label_len` is zero. When `label_len`
+/// is zero, it is OK for `label` to be something non-dereferencable,
+/// such as `0x1`. This is required due to Rust's optimization for slices
+/// within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `label` and `label_len` don't designate a valid memory block.
+/// UB ensues if `label` and `label_len` don't designate a valid memory block
+/// of if `label` is `NULL`.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_for_label_no_replacement(label: *const u8,
                                                            label_len: usize)
@@ -318,9 +333,15 @@ pub unsafe extern "C" fn encoding_for_label_no_replacement(label: *const u8,
 /// otherwise. Upon return, `*buffer_len` is the length of the BOM (zero if
 /// there is no BOM).
 ///
+/// `buffer` must be non-`NULL` even if `*buffer_len` is zero. When
+/// `*buffer_len` is zero, it is OK for `buffer` to be something
+/// non-dereferencable, such as `0x1`. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory block.
+/// UB ensues if `buffer` and `*buffer_len` don't designate a valid memory
+/// block of if `buffer` is `NULL`.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_for_bom(buffer: *const u8,
                                           buffer_len: *mut usize)
@@ -343,21 +364,27 @@ pub unsafe extern "C" fn encoding_for_bom(buffer: *const u8,
 /// type-safe `Encoding` objects. Using this function for other purposes is
 /// most likely the wrong thing to do.
 ///
+/// `name` must be non-`NULL` even if `name_len` is zero. When `name_len`
+/// is zero, it is OK for `name` to be something non-dereferencable,
+/// such as `0x1`. This is required due to Rust's optimization for slices
+/// within `Option`.
+///
 /// # Panics
 ///
 /// Panics if the argument is not the name of an encoding.
 ///
 /// # Undefined behavior
 ///
-/// UB ensues if `name` and `name_len` don't designate a valid memory block.
+/// UB ensues if `name` and `name_len` don't designate a valid memory block
+/// of if `name` is `NULL`.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_for_name(name: *const u8, name_len: usize) -> *const Encoding {
     let name_slice = ::std::slice::from_raw_parts(name, name_len);
     Encoding::for_name(name_slice)
 }
 
-/// Writes the name of the given `Encoding` to a caller-supplied buffer as ASCII
-/// and returns the number of bytes / ASCII characters written.
+/// Writes the name of the given `Encoding` to a caller-supplied buffer as
+/// ASCII and returns the number of bytes / ASCII characters written.
 ///
 /// The output is not null-terminated.
 ///
@@ -367,8 +394,8 @@ pub unsafe extern "C" fn encoding_for_name(name: *const u8, name_len: usize) -> 
 /// # Undefined behavior
 ///
 /// UB ensues if either argument is `NULL` or if `name_out` doesn't point to
-/// a valid block of memory whose length is at least `ENCODING_NAME_MAX_LENGTH`
-/// bytes.
+/// a valid block of memory whose length is at least
+/// `ENCODING_NAME_MAX_LENGTH` bytes.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_name(encoding: *const Encoding, name_out: *mut u8) -> usize {
     let bytes = (*encoding).name().as_bytes();
@@ -569,9 +596,15 @@ pub unsafe extern "C" fn encoding_new_encoder_into(encoding: *const Encoding,
 /// Returns the index of the first byte that makes the input malformed as
 /// UTF-8 or `buffer_len` if `buffer` is entirely valid.
 ///
+/// `buffer` must be non-`NULL` even if `buffer_len` is zero. When
+/// `buffer_len` is zero, it is OK for `buffer` to be something
+/// non-dereferencable, such as `0x1`. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory block.
+/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory
+/// block of if `buffer` is `NULL`.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_utf8_valid_up_to(buffer: *const u8, buffer_len: usize) -> usize {
     let buffer_slice = ::std::slice::from_raw_parts(buffer, buffer_len);
@@ -583,9 +616,15 @@ pub unsafe extern "C" fn encoding_utf8_valid_up_to(buffer: *const u8, buffer_len
 /// Returns the index of the first byte that makes the input malformed as
 /// ASCII or `buffer_len` if `buffer` is entirely valid.
 ///
+/// `buffer` must be non-`NULL` even if `buffer_len` is zero. When
+/// `buffer_len` is zero, it is OK for `buffer` to be something
+/// non-dereferencable, such as `0x1`. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory block.
+/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory
+/// block of if `buffer` is `NULL`.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_ascii_valid_up_to(buffer: *const u8, buffer_len: usize) -> usize {
     let buffer_slice = ::std::slice::from_raw_parts(buffer, buffer_len);
@@ -598,9 +637,15 @@ pub unsafe extern "C" fn encoding_ascii_valid_up_to(buffer: *const u8, buffer_le
 /// in the ASCII state of ISO-2022-JP or `buffer_len` if `buffer` is entirely
 /// representable in the ASCII state of ISO-2022-JP.
 ///
+/// `buffer` must be non-`NULL` even if `buffer_len` is zero. When
+/// `buffer_len` is zero, it is OK for `buffer` to be something
+/// non-dereferencable, such as `0x1`. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory block.
+/// UB ensues if `buffer` and `buffer_len` don't designate a valid memory
+/// block of if `buffer` is `NULL`.
 #[no_mangle]
 pub unsafe extern "C" fn encoding_iso_2022_jp_ascii_valid_up_to(buffer: *const u8,
                                                                 buffer_len: usize)
@@ -679,13 +724,18 @@ pub unsafe extern "C" fn decoder_max_utf8_buffer_length_without_replacement(deco
 /// `decoder_decode_*` functions are mapped from Rust and the documentation
 /// for the [`Decoder`][1] struct for the semantics.
 ///
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `decoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory, `dst` and `dst_len` don't designate a valid block
-/// of memory or `had_replacements` is `NULL`.
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
 ///
-/// [1]: ../struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf8(decoder: *mut Decoder,
                                                 src: *const u8,
@@ -710,13 +760,18 @@ pub unsafe extern "C" fn decoder_decode_to_utf8(decoder: *mut Decoder,
 /// `decoder_decode_*` functions are mapped from Rust and the documentation
 /// for the [`Decoder`][1] struct for the semantics.
 ///
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `decoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory or `dst` and `dst_len` don't designate a valid block
-/// of memory.
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
 ///
-/// [1]: ../struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf8_without_replacement(decoder: *mut Decoder,
                                                                     src: *const u8,
@@ -763,13 +818,18 @@ pub unsafe extern "C" fn decoder_max_utf16_buffer_length(decoder: *const Decoder
 /// `decoder_decode_*` functions are mapped from Rust and the documentation
 /// for the [`Decoder`][1] struct for the semantics.
 ///
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `decoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory, `dst` and `dst_len` don't designate a valid block
-/// of memory or `had_replacements` is `NULL`.
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
 ///
-/// [1]: ../struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf16(decoder: *mut Decoder,
                                                  src: *const u8,
@@ -794,13 +854,18 @@ pub unsafe extern "C" fn decoder_decode_to_utf16(decoder: *mut Decoder,
 /// `decoder_decode_*` functions are mapped from Rust and the documentation
 /// for the [`Decoder`][1] struct for the semantics.
 ///
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `decoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory or `dst` and `dst_len` don't designate a valid block
-/// of memory.
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
 ///
-/// [1]: ../struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf16_without_replacement(decoder: *mut Decoder,
                                                                      src: *const u8,
@@ -881,11 +946,18 @@ pub unsafe extern "C" fn encoder_max_buffer_length_from_utf8_without_replacement
 /// `encoder_encode_*` functions are mapped from Rust and the documentation
 /// for the [`Encoder`][1] struct for the semantics.
 ///
-/// UB ensues if `encoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory, `dst` and `dst_len` don't designate a valid block
-/// of memory, `had_replacements` is `NULL` or the input is not valid UTF-8.
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
 ///
-/// [1]: ../struct.Encoder.html
+/// # Undefined behavior
+///
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
+///
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf8(encoder: *mut Encoder,
                                                   src: *const u8,
@@ -914,13 +986,18 @@ pub unsafe extern "C" fn encoder_encode_from_utf8(encoder: *mut Encoder,
 /// The input absolutely _MUST_ be valid UTF-8 or the behavior is memory-unsafe!
 /// If in doubt, check the validity of input before using!
 ///
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `encoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory, `dst` and `dst_len` don't designate a valid block
-/// of memory or the input is not valid UTF-8.
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
 ///
-/// [1]: ../struct.Encoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf8_without_replacement(encoder: *mut Encoder,
                                                                       src: *const u8,
@@ -979,11 +1056,18 @@ pub unsafe extern "C" fn encoder_max_buffer_length_from_utf16_without_replacemen
 /// `encoder_encode_*` functions are mapped from Rust and the documentation
 /// for the [`Encoder`][1] struct for the semantics.
 ///
-/// UB ensues if `encoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory, `dst` and `dst_len` don't designate a valid block
-/// of memory or `had_replacements` is `NULL`.
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
 ///
-/// [1]: ../struct.Encoder.html
+/// # Undefined behavior
+///
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
+///
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf16(encoder: *mut Encoder,
                                                    src: *const u16,
@@ -1009,13 +1093,18 @@ pub unsafe extern "C" fn encoder_encode_from_utf16(encoder: *mut Encoder,
 /// `encoder_encode_*` functions are mapped from Rust and the documentation
 /// for the [`Encoder`][1] struct for the semantics.
 ///
+/// `src` must be non-`NULL` even if `src_len` is zero. When`src_len` is zero,
+/// it is OK for `src` to be something non-dereferencable, such as `0x1`.
+/// Likewise for `dst` when `dst_len` is zero. This is required due to Rust's
+/// optimization for slices within `Option`.
+///
 /// # Undefined behavior
 ///
-/// UB ensues if `encoder` is `NULL`, `src` and `src_len` don't designate a
-/// valid block of memory or `dst` and `dst_len` don't designate a valid block
-/// of memory.
+/// UB ensues if any of the pointer arguments is `NULL`, `src` and `src_len`
+/// don't designate a valid block of memory or `dst` and `dst_len` don't
+/// designate a valid block of memory.
 ///
-/// [1]: ../struct.Encoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf16_without_replacement(encoder: *mut Encoder,
                                                                        src: *const u16,

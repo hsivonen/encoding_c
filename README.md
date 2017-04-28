@@ -23,6 +23,11 @@ adapt the header to their replacements of standard-library types.
 
 ## Release Notes
 
+### 0.7.1
+
+* Fix documentation for pointers that get used in
+  `std::slice::from_raw_parts()`.
+
 ### 0.7.0
 
 * Map `None` to `SIZE_MAX` in the max length calculation functions.
