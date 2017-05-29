@@ -23,9 +23,14 @@ adapt the header to their replacements of standard-library types.
 
 ## Release Notes
 
+### 0.7.3
+
+* Use C preprocessor definitions for encoding constant declarations.
+
 ### 0.7.2
 
 * Parametrize the struct type names behind C preprocessor definitions.
+* Leave it to the user to provide `char16_t`. Avoid including a header for it.
 
 ### 0.7.1
 
