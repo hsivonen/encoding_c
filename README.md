@@ -23,6 +23,10 @@ adapt the header to their replacements of standard-library types.
 
 ## Release Notes
 
+### 0.7.2
+
+* Parametrize the struct type names behind C preprocessor definitions.
+
 ### 0.7.1
 
 * Fix documentation for pointers that get used in

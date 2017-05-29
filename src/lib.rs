@@ -7,6 +7,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![doc(html_root_url = "https://docs.rs/encoding_c/0.7.2")]
+
 //! The C API for encoding_rs.
 //!
 //! # Mapping from Rust
@@ -735,7 +737,7 @@ pub unsafe extern "C" fn decoder_max_utf8_buffer_length_without_replacement(deco
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf8(decoder: *mut Decoder,
                                                 src: *const u8,
@@ -771,7 +773,7 @@ pub unsafe extern "C" fn decoder_decode_to_utf8(decoder: *mut Decoder,
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf8_without_replacement(decoder: *mut Decoder,
                                                                     src: *const u8,
@@ -829,7 +831,7 @@ pub unsafe extern "C" fn decoder_max_utf16_buffer_length(decoder: *const Decoder
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf16(decoder: *mut Decoder,
                                                  src: *const u8,
@@ -865,7 +867,7 @@ pub unsafe extern "C" fn decoder_decode_to_utf16(decoder: *mut Decoder,
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Decoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Decoder.html
 #[no_mangle]
 pub unsafe extern "C" fn decoder_decode_to_utf16_without_replacement(decoder: *mut Decoder,
                                                                      src: *const u8,
@@ -957,7 +959,7 @@ pub unsafe extern "C" fn encoder_max_buffer_length_from_utf8_without_replacement
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf8(encoder: *mut Encoder,
                                                   src: *const u8,
@@ -997,7 +999,7 @@ pub unsafe extern "C" fn encoder_encode_from_utf8(encoder: *mut Encoder,
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf8_without_replacement(encoder: *mut Encoder,
                                                                       src: *const u8,
@@ -1067,7 +1069,7 @@ pub unsafe extern "C" fn encoder_max_buffer_length_from_utf16_without_replacemen
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf16(encoder: *mut Encoder,
                                                    src: *const u16,
@@ -1104,7 +1106,7 @@ pub unsafe extern "C" fn encoder_encode_from_utf16(encoder: *mut Encoder,
 /// don't designate a valid block of memory or `dst` and `dst_len` don't
 /// designate a valid block of memory.
 ///
-/// [1]: https://docs.rs/encoding_rs/0.6.2/encoding_rs/struct.Encoder.html
+/// [1]: https://docs.rs/encoding_rs/0.6.10/encoding_rs/struct.Encoder.html
 #[no_mangle]
 pub unsafe extern "C" fn encoder_encode_from_utf16_without_replacement(encoder: *mut Encoder,
                                                                        src: *const u16,
