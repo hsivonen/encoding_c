@@ -40,7 +40,7 @@
 //! value 0, 1, 2 or 3, indicate the number of bytes that were consumed after
 //! the malformed sequence and whose next-lowest 8 bits, when shifted right by
 //! 8 indicate the length of the malformed byte sequence (possible decimal
-//! values 1, 2 and 3).
+//! values 1, 2, 3 or 4). The maximum possible sum of the two is 6.
 
 extern crate encoding_rs;
 

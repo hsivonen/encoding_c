@@ -58,10 +58,11 @@ class Encoding;
  * listed above).
  *
  * Packed info about malformed sequences has the following format:
- * The lowest 8 bits, which can have the decimal value 0, 1, 2 or 3, indicate
- * the number of bytes that were consumed after the malformed sequence and the
- *  next-lowest 8 bits, when shifted right by 8 indicate the length of the
- *  malformed byte sequence (possible decimal values 1, 2 and 3).
+ * The lowest 8 bits, which can have the decimal value 0, 1, 2 or 3,
+ * indicate the number of bytes that were consumed after the malformed
+ * sequence and whose next-lowest 8 bits, when shifted right by 8 indicate
+ * the length of the malformed byte sequence (possible decimal values 1, 2,
+ * 3 or 4). The maximum possible sum of the two is 6.
  *
  * In the case of methods whose name does not end with
  * `*_without_replacement`, malformed sequences are automatically replaced
