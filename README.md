@@ -1,7 +1,7 @@
 # encoding_c
 
-[![crates.io](https://meritbadge.herokuapp.com/encoding_rs)](https://crates.io/crates/encoding_c)
-[![docs.rs](https://docs.rs/encoding_rs/badge.svg)](https://docs.rs/encoding_c/)
+[![crates.io](https://meritbadge.herokuapp.com/encoding_c)](https://crates.io/crates/encoding_c)
+[![docs.rs](https://docs.rs/encoding_c/badge.svg)](https://docs.rs/encoding_c/)
 [![Apache 2 / MIT dual-licensed](https://img.shields.io/badge/license-Apache%202%20%2F%20MIT-blue.svg)](https://github.com/hsivonen/encoding_c/blob/master/COPYRIGHT)
 
 encoding_c is an FFI wrapper for [encoding_rs](https://github.com/hsivonen/encoding_rs).
