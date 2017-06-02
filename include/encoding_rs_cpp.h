@@ -581,6 +581,12 @@ public:
    * whitespace, the argument matches a label defined in the Encoding
    * Standard, `const Encoding*` representing the corresponding
    * encoding is returned. If there is no match, `nullptr` is returned.
+   *
+   * This is the right method to use if the action upon the method returning
+   * `nullptr` is to use a fallback encoding (e.g. `WINDOWS_1252_ENCODING`)
+   * instead. When the action upon the method returning `nullptr` is not to
+   * proceed with a fallback but to refuse processing,
+   * `for_label_no_replacement()` is more appropriate.
    */
   static inline const Encoding* for_label(gsl::cstring_span<> label)
   {
@@ -596,6 +602,11 @@ public:
    * upon invalid label, because in those cases the caller typically wishes
    * to treat the labels that map to the replacement encoding as fatal
    * errors, too.
+   *
+   * It is not OK to use this method when the action upon the method returning
+   * `nullptr` is to use a fallback encoding (e.g. `WINDOWS_1252_ENCODING`). In
+   * such a case, the `for_label()` method should be used instead in order to avoid
+   * unsafe fallback for labels that `for_label()` maps to `REPLACEMENT_ENCODING`.
    */
   static inline const Encoding* for_label_no_replacement(
     gsl::cstring_span<> label)

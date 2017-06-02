@@ -277,6 +277,12 @@ fn option_to_ptr(opt: Option<&'static Encoding>) -> *const Encoding {
 /// Standard, `const Encoding*` representing the corresponding
 /// encoding is returned. If there is no match, `NULL` is returned.
 ///
+/// This is the right function to use if the action upon the method returning
+/// `NULL` is to use a fallback encoding (e.g. `WINDOWS_1252_ENCODING`) instead.
+/// When the action upon the method returning `NULL` is not to proceed with
+/// a fallback but to refuse processing, `encoding_for_label_no_replacement()` is
+/// more appropriate.
+///
 /// The argument buffer can be in any ASCII-compatible encoding. It is not
 /// required to be UTF-8.
 ///
@@ -303,6 +309,12 @@ pub unsafe extern "C" fn encoding_for_label(label: *const u8, label_len: usize) 
 /// upon invalid label, because in those cases the caller typically wishes
 /// to treat the labels that map to the replacement encoding as fatal
 /// errors, too.
+///
+/// It is not OK to use this funciton when the action upon the method returning
+/// `NULL` is to use a fallback encoding (e.g. `WINDOWS_1252_ENCODING`). In
+/// such a case, the `encoding_for_label()` function should be used instead
+/// in order to avoid unsafe fallback for labels that `encoding_for_label()`
+/// maps to `REPLACEMENT_ENCODING`.
 ///
 /// The argument buffer can be in any ASCII-compatible encoding. It is not
 /// required to be UTF-8.
