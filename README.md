@@ -23,6 +23,10 @@ adapt the header to their replacements of standard-library types.
 
 ## Release Notes
 
+### 0.7.4
+
+* Wrap `has_pending_state()`.
+
 ### 0.7.3
 
 * Use C preprocessor definitions for encoding constant declarations.
