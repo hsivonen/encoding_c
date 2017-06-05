@@ -385,6 +385,15 @@ public:
   }
 
   /**
+   * Returns `true` if this is an ISO-2022-JP encoder that's not in the
+   * ASCII state and `false` otherwise.
+   */
+  inline bool has_pending_state() const
+  {
+    return encoder_has_pending_state(this);
+  }
+
+  /**
    * Query the worst-case output size when encoding from UTF-8 with
    * replacement.
    *

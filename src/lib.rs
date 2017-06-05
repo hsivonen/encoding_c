@@ -918,6 +918,17 @@ pub unsafe extern "C" fn encoder_encoding(encoder: *const Encoder) -> *const Enc
     (*encoder).encoding()
 }
 
+/// Returns `true` if this is an ISO-2022-JP encoder that's not in the
+/// ASCII state and `false` otherwise.
+///
+/// # Undefined behavior
+///
+/// UB ensues if the argument is `NULL`.
+#[no_mangle]
+pub unsafe extern "C" fn encoder_has_pending_state(encoder: *const Encoder) -> bool {
+    (*encoder).has_pending_state()
+}
+
 /// Query the worst-case output size when encoding from UTF-8 with
 /// replacement.
 ///

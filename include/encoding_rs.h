@@ -34,6 +34,12 @@ extern "C" {
 /// Standard, `const ENCODING_RS_ENCODING*` representing the corresponding
 /// encoding is returned. If there is no match, `NULL` is returned.
 ///
+/// This is the right function to use if the action upon the method returning
+/// `NULL` is to use a fallback encoding (e.g. `WINDOWS_1252_ENCODING`) instead.
+/// When the action upon the method returning `NULL` is not to proceed with
+/// a fallback but to refuse processing, `encoding_for_label_no_replacement()` is
+/// more appropriate.
+///
 /// The argument buffer can be in any ASCII-compatible encoding. It is not
 /// required to be UTF-8.
 ///
@@ -56,6 +62,12 @@ ENCODING_RS_ENCODING const* encoding_for_label(uint8_t const* label, size_t labe
 /// upon invalid label, because in those cases the caller typically wishes
 /// to treat the labels that map to the replacement encoding as fatal
 /// errors, too.
+///
+/// It is not OK to use this funciton when the action upon the method returning
+/// `NULL` is to use a fallback encoding (e.g. `WINDOWS_1252_ENCODING`). In
+/// such a case, the `encoding_for_label()` function should be used instead
+/// in order to avoid unsafe fallback for labels that `encoding_for_label()`
+/// maps to `REPLACEMENT_ENCODING`.
 ///
 /// The argument buffer can be in any ASCII-compatible encoding. It is not
 /// required to be UTF-8.
@@ -486,6 +498,14 @@ void encoder_free(ENCODING_RS_ENCODER* encoder);
 ///
 /// UB ensues if the argument is `NULL`.
 ENCODING_RS_ENCODING const* encoder_encoding(ENCODING_RS_ENCODER const* encoder);
+
+/// Returns `true` if this is an ISO-2022-JP encoder that's not in the
+/// ASCII state and `false` otherwise.
+///
+/// # Undefined behavior
+///
+/// UB ensues if the argument is `NULL`.
+bool encoder_has_pending_state(ENCODING_RS_ENCODER const* encoder);
 
 /// Query the worst-case output size when encoding from UTF-8 with
 /// replacement.
