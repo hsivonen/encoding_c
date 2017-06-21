@@ -23,6 +23,12 @@ adapt the header to their replacements of standard-library types.
 
 ## Release Notes
 
+### 0.7.5
+
+* Annotate the encoding pointers that should be wrapped with a
+  same-representation not-null type in C++ as
+  `ENCODING_RS_NON_NULL_CONST_ENCODING_PTR`.
+
 ### 0.7.4
 
 * Wrap `has_pending_state()`.
