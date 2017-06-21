@@ -39,6 +39,14 @@ fn replace(path: &str) -> std::io::Result<()> {
     s = s.replace("ENCODING_RS_DECODER.html", "Decoder.html");
     s = s.replace("#include <stdbool.h>",
                   "#include <stdbool.h>\n#include \"encoding_rs_statics.h\"");
+    s = s.replace("ENCODING_RS_ENCODING const* encoding_for_name",
+                  "ENCODING_RS_NON_NULL_CONST_ENCODING_PTR encoding_for_name");
+    s = s.replace("ENCODING_RS_ENCODING const* encoding_output_encoding",
+                  "ENCODING_RS_NON_NULL_CONST_ENCODING_PTR encoding_output_encoding");
+    s = s.replace("ENCODING_RS_ENCODING const* decoder_encoding",
+                  "ENCODING_RS_NON_NULL_CONST_ENCODING_PTR decoder_encoding");
+    s = s.replace("ENCODING_RS_ENCODING const* encoder_encoding",
+                  "ENCODING_RS_NON_NULL_CONST_ENCODING_PTR encoder_encoding");
     let mut f = try!(File::create(path));
     try!(f.write_all(s.as_bytes()));
     Ok(())
