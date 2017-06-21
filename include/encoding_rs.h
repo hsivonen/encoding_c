@@ -127,7 +127,7 @@ ENCODING_RS_ENCODING const* encoding_for_bom(uint8_t const* buffer, size_t* buff
 ///
 /// UB ensues if `name` and `name_len` don't designate a valid memory block
 /// of if `name` is `NULL`.
-ENCODING_RS_NON_NULL_CONST_ENCODING_PTR encoding_for_name(uint8_t const* name, size_t name_len);
+ENCODING_RS_ENCODING const* encoding_for_name(uint8_t const* name, size_t name_len);
 
 /// Writes the name of the given `ENCODING_RS_ENCODING` to a caller-supplied buffer as
 /// ASCII and returns the number of bytes / ASCII characters written.
@@ -166,7 +166,7 @@ bool encoding_is_ascii_compatible(ENCODING_RS_ENCODING const* encoding);
 /// # Undefined behavior
 ///
 /// UB ensues if the argument is `NULL`.
-ENCODING_RS_NON_NULL_CONST_ENCODING_PTR encoding_output_encoding(ENCODING_RS_ENCODING const* encoding);
+ENCODING_RS_ENCODING const* encoding_output_encoding(ENCODING_RS_ENCODING const* encoding);
 
 /// Allocates a new `ENCODING_RS_DECODER` for the given `ENCODING_RS_ENCODING` on the heap with BOM
 /// sniffing enabled and returns a pointer to the newly-allocated `ENCODING_RS_DECODER`.
@@ -357,7 +357,7 @@ void decoder_free(ENCODING_RS_DECODER* decoder);
 /// # Undefined behavior
 ///
 /// UB ensues if the argument is `NULL`.
-ENCODING_RS_NON_NULL_CONST_ENCODING_PTR decoder_encoding(ENCODING_RS_DECODER const* decoder);
+ENCODING_RS_ENCODING const* decoder_encoding(ENCODING_RS_DECODER const* decoder);
 
 /// Query the worst-case UTF-8 output size _with replacement_.
 ///
@@ -497,7 +497,7 @@ void encoder_free(ENCODING_RS_ENCODER* encoder);
 /// # Undefined behavior
 ///
 /// UB ensues if the argument is `NULL`.
-ENCODING_RS_NON_NULL_CONST_ENCODING_PTR encoder_encoding(ENCODING_RS_ENCODER const* encoder);
+ENCODING_RS_ENCODING const* encoder_encoding(ENCODING_RS_ENCODER const* encoder);
 
 /// Returns `true` if this is an ISO-2022-JP encoder that's not in the
 /// ASCII state and `false` otherwise.
