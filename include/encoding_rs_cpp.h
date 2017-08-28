@@ -644,27 +644,6 @@ public:
   }
 
   /**
-   * If the argument matches exactly (case-sensitively; no whitespace
-   * removal performed) the name of an encoding, returns
-   * `const Encoding*` representing that encoding. Otherwise panics.
-   *
-   * The motivating use case for this method is interoperability with
-   * legacy Gecko code that represents encodings as name string instead of
-   * type-safe `Encoding` objects. Using this method for other purposes is
-   * most likely the wrong thing to do.
-   *
-   * # Panics
-   *
-   * Panics if the argument is not the name of an encoding.
-   */
-  static inline gsl::not_null<const Encoding*> for_name(
-    gsl::cstring_span<> name)
-  {
-    return encoding_for_name(reinterpret_cast<const uint8_t*>(name.data()),
-                             name.length());
-  }
-
-  /**
    * Returns the name of this encoding.
    *
    * This name is appropriate to return as-is from the DOM
