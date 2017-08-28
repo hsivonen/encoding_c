@@ -260,6 +260,8 @@ public:
 
 private:
   Decoder() = delete;
+  Decoder(const Decoder&) = delete;
+  Decoder& operator=(const Decoder&) = delete;
 };
 
 /**
@@ -529,6 +531,8 @@ public:
 
 private:
   Encoder() = delete;
+  Encoder(const Encoder&) = delete;
+  Encoder& operator=(const Encoder&) = delete;
 };
 
 /**
@@ -1269,6 +1273,8 @@ public:
 
 private:
   Encoding() = delete;
+  Encoding(const Encoding&) = delete;
+  Encoding& operator=(const Encoding&) = delete;
   ~Encoding() = delete;
 };
 
