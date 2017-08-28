@@ -30,6 +30,12 @@ adapt the header to their replacements of standard-library types.
 
 ## Release Notes
 
+### 0.8.0
+
+* Update to encoding_rs 0.7.0.
+* Drop `encoding_for_name()`.
+* Deal correctly with the `data()` method of `gsl::span` returning `nullptr`.
+
 ### 0.7.6
 
 * Rename `ENCODING_RS_NON_NULL_CONST_ENCODING_PTR` to
