@@ -319,7 +319,7 @@ private:
   template<class T>
   static inline T* null_to_bogus(T* ptr)
   {
-    return ptr ? ptr : reinterpret_cast<T*>(0x1);
+    return ptr ? ptr : reinterpret_cast<T*>(alignof(T));
   }
 
   Decoder() = delete;
@@ -640,7 +640,7 @@ private:
   template<class T>
   static inline T* null_to_bogus(T* ptr)
   {
-    return ptr ? ptr : reinterpret_cast<T*>(0x1);
+    return ptr ? ptr : reinterpret_cast<T*>(alignof(T));
   }
 
   Encoder() = delete;
@@ -1386,7 +1386,7 @@ private:
   template<class T>
   static inline T* null_to_bogus(T* ptr)
   {
-    return ptr ? ptr : reinterpret_cast<T*>(0x1);
+    return ptr ? ptr : reinterpret_cast<T*>(alignof(T));
   }
 
   Encoding() = delete;
