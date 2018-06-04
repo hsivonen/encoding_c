@@ -1,7 +1,7 @@
 [package]
 name = "encoding_c"
 description = "C API for encoding_rs"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Henri Sivonen <hsivonen@hsivonen.fi>"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -14,10 +14,12 @@ keywords = ["ffi", "capi", "encoding", "unicode", "charset"]
 
 [features]
 simd-accel = ["encoding_rs/simd-accel"]
-no-static-ideograph-encoder-tables = ["encoding_rs/no-static-ideograph-encoder-tables"]
+less-slow-kanji-encode = ["encoding_rs/less-slow-kanji-encode"]
+less-slow-big5-hanzi-encode = ["encoding_rs/less-slow-big5-hanzi-encode"]
+less-slow-gb-hanzi-encode = ["encoding_rs/less-slow-gb-hanzi-encode"]
 
 [dependencies]
-encoding_rs = "0.7.0"
+encoding_rs = "0.8.0"
 
 # Uncomment the lines below to re-run cheddar.
 # [build-dependencies]
