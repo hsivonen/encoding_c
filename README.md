@@ -28,6 +28,9 @@ GSL and the C++ standard library. Since C++ project typically roll their own
 string classes, etc., it's probably necessary for C++ projects to manually
 adapt the header to their replacements of standard-library types.
 
+There's a [write-up](https://hsivonen.fi/modern-cpp-in-rust/) about the C++
+wrappers.
+
 ## Release Notes
 
 ### 0.9.1
