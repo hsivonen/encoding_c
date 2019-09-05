@@ -6,6 +6,11 @@
 
 encoding_c is an FFI wrapper for [encoding_rs](https://github.com/hsivonen/encoding_rs).
 
+## Bindings for `encoding_rs::mem`
+
+See the [`encoding_c_mem` crate](https://crates.io/crates/encoding_c_mem)
+for bindings for `encoding_rs::mem`.
+
 ## Licensing
 
 Please see the file named
@@ -32,6 +37,10 @@ There's a [write-up](https://hsivonen.fi/modern-cpp-in-rust/) about the C++
 wrappers.
 
 ## Release Notes
+
+### 0.9.2
+
+* Wrap `Decoder::latin1_byte_compatible_up_to`.
 
 ### 0.9.1
 
