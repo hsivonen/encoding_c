@@ -38,6 +38,10 @@ wrappers.
 
 ## Release Notes
 
+### 0.9.3
+
+* Fix bogus C++ header.
+
 ### 0.9.2
 
 * Wrap `Decoder::latin1_byte_compatible_up_to`.

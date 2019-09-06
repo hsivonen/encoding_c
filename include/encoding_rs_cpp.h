@@ -300,10 +300,11 @@ class Decoder final {
    * Do not use this unless you are supporting SpiderMonkey/V8-style string
    * storage optimizations.
    */
-  inline std::optional<size_t> max_utf8_buffer_length_without_replacement(
+  inline std::optional<size_t> latin1_byte_compatible_up_to(
       gsl::span<const uint8_t> buffer) const {
-    size_t val = latin1_byte_compatible_up_to(
-        this, null_to_bogus<const uint8_t>(buffer.data()), buffer.size);
+    size_t val = decoder_latin1_byte_compatible_up_to(
+        this, null_to_bogus<const uint8_t>(buffer.data()),
+        static_cast<size_t>(buffer.size()));
     if (val == SIZE_MAX) {
       return std::nullopt;
     }
