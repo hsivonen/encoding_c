@@ -526,7 +526,7 @@ uint32_t decoder_decode_to_utf16_without_replacement(
 /// block of if `buffer` is `NULL`.
 size_t decoder_latin1_byte_compatible_up_to(ENCODING_RS_DECODER const* decoder,
                                             uint8_t const* buffer,
-                                            size_t* buffer_len);
+                                            size_t buffer_len);
 
 /// Deallocates an `ENCODING_RS_ENCODER` previously allocated by
 /// `encoding_new_encoder()`.
