@@ -286,7 +286,7 @@ class Decoder final {
    * bytes taking into account the state of the decoder.
    *
    * Returns `std::nullopt` if the decoder is not in a neutral state, including
-   * waiting for the BOM or if the encoding is never Latin-byte-compatible.
+   * waiting for the BOM, or if the encoding is never Latin1-byte-compatible.
    *
    * Otherwise returns the index of the first byte whose unsigned value doesn't
    * directly correspond to the decoded Unicode scalar value, or the length
