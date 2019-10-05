@@ -38,6 +38,10 @@ wrappers.
 
 ## Release Notes
 
+### 0.9.6
+
+* Fix a bug in the C++ header.
+
 ### 0.9.5
 
 * Adjust documentation for encoding_rs 0.8.20.

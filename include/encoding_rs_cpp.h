@@ -901,8 +901,8 @@ class Encoding final {
    * (https://encoding.spec.whatwg.org/#utf-8-decode-without-bom-or-fail)
    * spec concept.
    *
-   * Returns `None` if a malformed sequence was encountered and the result
-   * of the decode as `Some(String)` otherwise.
+   * Returns `std::nullopt` if a malformed sequence was encountered and the result
+   * of the decode as `std::optional<std::string>` otherwise.
    *
    * _Note:_ It is wrong to use this when the input buffer represents only
    * a segment of the input instead of the whole input. Use
@@ -931,6 +931,7 @@ class Encoding final {
       string.resize(written);
       return string;
     }
+    return std::nullopt;
   }
 
   /**
@@ -1047,8 +1048,8 @@ class Encoding final {
    * (https://encoding.spec.whatwg.org/#utf-8-decode-without-bom-or-fail)
    * spec concept.
    *
-   * Returns `None` if a malformed sequence was encountered and the result
-   * of the decode as `Some(String)` otherwise.
+   * Returns `std::nullopt` if a malformed sequence was encountered and the result
+   * of the decode as `std::optional<std::u16string>` otherwise.
    *
    * _Note:_ It is wrong to use this when the input buffer represents only
    * a segment of the input instead of the whole input. Use
@@ -1073,6 +1074,7 @@ class Encoding final {
       string.resize(written);
       return string;
     }
+    return std::nullopt;
   }
 
   /**
