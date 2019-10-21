@@ -9,8 +9,8 @@ documentation = "https://docs.rs/encoding_c/"
 homepage = "https://docs.rs/encoding_c/"
 repository = "https://github.com/hsivonen/encoding_c"
 keywords = ["ffi", "capi", "encoding", "unicode", "charset"]
-# Uncomment the line below and rename build-disabled.rs to build.rs to re-run cheddar.
-# build = "build.rs"
+build = "build.rs"
+links = "encoding_c"
 
 [features]
 simd-accel = ["encoding_rs/simd-accel"]
