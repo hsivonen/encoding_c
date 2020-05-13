@@ -1,7 +1,7 @@
 [package]
 name = "encoding_c"
 description = "C API for encoding_rs"
-version = "0.9.7"
+version = "0.9.8"
 authors = ["Henri Sivonen <hsivonen@hsivonen.fi>"]
 license = "Apache-2.0 OR MIT"
 readme = "README.md"
