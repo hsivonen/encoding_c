@@ -744,7 +744,7 @@ class Encoding final {
    */
   inline std::string name() const {
     std::string name(ENCODING_NAME_MAX_LENGTH, '\0');
-    // http://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483
+    // https://herbsutter.com/2008/04/07/cringe-not-vectors-are-guaranteed-to-be-contiguous/#comment-483
     size_t length = encoding_name(this, reinterpret_cast<uint8_t*>(&name[0]));
     name.resize(length);
     return name;
