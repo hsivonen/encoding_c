@@ -1,8 +1,8 @@
 # encoding_c
 
 [![crates.io](https://img.shields.io/crates/v/encoding_c.svg)](https://crates.io/crates/encoding_c)
-[![docs.rs](https://docs.rs/encoding_c/badge.svg)](https://docs.rs/encoding_c/)
-[![Apache 2 / MIT dual-licensed](https://img.shields.io/badge/license-Apache%202%20%2F%20MIT-blue.svg)](https://github.com/hsivonen/encoding_c/blob/master/COPYRIGHT)
+[![docs.rs](https://docs.rs/encoding_c/badge.svg)](https://docs.rs/encoding_c)
+[![Apache 2 / MIT dual-licensed](https://img.shields.io/badge/license-Apache%202%20%2F%20MIT-blue.svg)](https://github.com/hsivonen/encoding_c/blob/main/COPYRIGHT)
 
 encoding_c is an FFI wrapper for [encoding_rs](https://github.com/hsivonen/encoding_rs).
 
@@ -14,7 +14,7 @@ for bindings for `encoding_rs::mem`.
 ## Licensing
 
 Please see the file named
-[COPYRIGHT](https://github.com/hsivonen/encoding_c/blob/master/COPYRIGHT).
+[COPYRIGHT](https://github.com/hsivonen/encoding_c/blob/main/COPYRIGHT).
 
 ## No Unwinding Support!
 
